@@ -21,67 +21,6 @@ export default function CollectionsPage() {
     <MaintenanceWrapper pageId="nft">
       <main className="min-h-screen py-8 md:py-12 lg:py-16">
         <div className="max-w-dashboard mx-auto px-4 md:px-6 lg:px-8">
-          
-          {/* Header */}
-          <div className="mb-8 md:mb-12">
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
-              <Link href="/nft" className="hover:text-text-primary transition-colors">
-                Marketplace
-              </Link>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="text-text-primary">Collections</span>
-            </div>
-
-            {/* Title */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary mb-2">
-                  NFT Collections
-                </h1>
-                <p className="text-text-secondary text-sm md:text-base">
-                  Browse {collections.length > 0 ? `${collections.length} collections` : 'collections'} with active marketplace listings
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={refresh}
-                  disabled={loading}
-                  className="
-                    p-2.5 rounded-xl bg-bg-surface border border-border-default
-                    text-text-secondary hover:text-text-primary hover:border-border-active
-                    tr-interactive disabled:opacity-50
-                  "
-                  title="Refresh"
-                >
-                  <svg 
-                    className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
-
-                <Link
-                  href="/nft"
-                  className="
-                    px-4 py-2.5 rounded-xl bg-bg-surface border border-border-default
-                    text-text-secondary hover:text-text-primary hover:border-border-active
-                    tr-interactive text-sm font-medium
-                  "
-                >
-                  View All NFTs
-                </Link>
-              </div>
-            </div>
-          </div>
-
           {/* Error State */}
           {error && (
             <div className="bg-bg-surface rounded-2xl border border-border-default p-6 text-center mb-8">
