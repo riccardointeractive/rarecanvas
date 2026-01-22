@@ -8,16 +8,39 @@
 import { SortOption, MarketplaceTab } from '../types/nft.types';
 
 // =============================================================================
+// Klever Marketplace IDs
+// =============================================================================
+
+export const KLEVER_MARKETPLACES = {
+  RARE_CANVAS: '417b70c0eb7a33cb',
+  KLEVER_NFT: 'd4f2bab340c55fde',
+  XPORT: 'aa68ad853a09988c',
+  NFT_ART_GALLERY: 'd2a04fe890a6edda',
+  MINTHREE: '2936933ee43db509',
+  SKY_GALLERY: '7c353c02770da029',
+  KDEX: '116056b257d9f6d5',
+  WORLD_DEX: '81376f526cf47730',
+} as const;
+
+export type MarketplaceId = typeof KLEVER_MARKETPLACES[keyof typeof KLEVER_MARKETPLACES];
+
+// Exchange address where listed NFTs are held
+export const KLEVER_EXCHANGE_ADDRESS = 'klv1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllsymmgky';
+
+// =============================================================================
 // Marketplace Configuration
 // =============================================================================
 
 export const NFT_CONFIG = {
   // Platform fee percentage (in basis points, 100 = 1%)
   platformFeePercent: 250, // 2.5%
-  
+
+  // Default marketplace for listing (Rare Canvas)
+  defaultMarketplaceId: KLEVER_MARKETPLACES.RARE_CANVAS,
+
   // Default currencies for listings
   defaultCurrency: 'KLV',
-  supportedCurrencies: ['KLV', 'DGKO-7B1E', 'USDT-43Z5'],
+  supportedCurrencies: ['KLV'],
   
   // Pagination
   defaultPerPage: 12,

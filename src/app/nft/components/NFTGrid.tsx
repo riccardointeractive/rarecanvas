@@ -113,7 +113,7 @@ export function NFTListView({
     return (
       <div className="space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="glass rounded-xl p-4 flex gap-4 animate-pulse">
+          <div key={i} className="bg-bg-surface rounded-xl border border-border-default p-4 flex gap-4 animate-pulse">
             <div className="w-20 h-20 rounded-lg bg-overlay-default" />
             <div className="flex-1 space-y-2">
               <div className="h-4 bg-overlay-default rounded w-1/4" />
@@ -147,9 +147,9 @@ export function NFTListView({
           key={item.id}
           onClick={() => onNFTClick?.(item.nft, listings ? item as NFTListing : undefined)}
           className="
-            glass rounded-xl p-3 md:p-4 flex gap-3 md:gap-4
-            cursor-pointer hover:bg-overlay-hover hover:border-border-active
-            transition-all duration-150
+            bg-bg-surface rounded-xl border border-border-default p-3 md:p-4 flex gap-3 md:gap-4
+            cursor-pointer hover:bg-bg-elevated hover:border-border-active
+            tr-card
           "
         >
           {/* Thumbnail */}

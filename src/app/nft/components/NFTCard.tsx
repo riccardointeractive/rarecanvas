@@ -63,8 +63,8 @@ export function NFTCard({
     <div
       onClick={onClick}
       className={`
-        group relative glass rounded-2xl overflow-hidden transition-all duration-150
-        hover:border-border-active hover:bg-overlay-hover
+        group relative bg-bg-surface rounded-2xl overflow-hidden border border-border-default
+        tr-card hover:border-border-active hover:bg-bg-elevated
         ${onClick ? 'cursor-pointer' : ''}
         ${compact ? 'p-2' : 'p-3 md:p-4'}
       `}
@@ -84,8 +84,7 @@ export function NFTCard({
           src={imageUrl}
           alt={nft.name}
           className={`
-            w-full h-full object-cover transition-all duration-150
-            
+            w-full h-full object-cover tr-opacity
             ${imageLoaded ? 'opacity-100' : 'opacity-0'}
           `}
           onLoad={() => setImageLoaded(true)}
@@ -102,15 +101,14 @@ export function NFTCard({
           </div>
         )}
 
-        {/* Hover Overlay */}
+        {/* Hover Overlay - flat design */}
         <div className="
-          absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent
-          opacity-0 group-hover:opacity-100 transition-opacity duration-150
-          flex items-end justify-center pb-4
+          absolute inset-0 bg-bg-base/80
+          opacity-0 group-hover:opacity-100 tr-opacity
+          flex items-center justify-center
         ">
           <span className="
-            px-4 py-2 bg-brand-primary rounded-lg text-text-primary text-sm font-medium
-            transform translate-y-4 group-hover:translate-y-0 tr-transform
+            px-4 py-2 bg-brand-primary rounded-lg text-text-on-brand text-sm font-medium
           ">
             View Details
           </span>
@@ -145,11 +143,11 @@ export function NFTCard({
               </p>
             </div>
             {/* Quick Buy Button */}
-            <button 
+            <button
               className="
                 p-2 rounded-lg bg-brand-primary/10 border border-border-brand
-                text-brand-primary hover:bg-brand-primary hover:text-text-primary
-                transition-all duration-100
+                text-brand-primary hover:bg-brand-primary hover:text-text-on-brand
+                tr-interactive
               "
               onClick={(e) => {
                 e.stopPropagation();
@@ -181,7 +179,7 @@ export function NFTCard({
 export function NFTCardSkeleton({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`
-      glass rounded-2xl overflow-hidden
+      bg-bg-surface rounded-2xl overflow-hidden border border-border-default
       ${compact ? 'p-2' : 'p-3 md:p-4'}
     `}>
       {/* Image Skeleton */}

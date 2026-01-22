@@ -16,6 +16,7 @@
 
 import { debugLog } from '@/utils/debugMode';
 import { getTokenDecimals } from '@/config/tokens';
+import { NFT_CONFIG } from '../config/nft.config';
 
 // Declare window type for Klever Extension
 declare global {
@@ -115,13 +116,13 @@ const NETWORK_CONFIG = {
     apiUrl: 'https://api.mainnet.klever.org',
     nodeUrl: 'https://node.mainnet.klever.org',
     explorerUrl: 'https://kleverscan.org',
-    defaultMarketplaceId: 'klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpgm89z',
+    defaultMarketplaceId: NFT_CONFIG.defaultMarketplaceId, // Rare Canvas marketplace
   },
   testnet: {
     apiUrl: 'https://api.testnet.klever.org',
     nodeUrl: 'https://node.testnet.klever.org',
     explorerUrl: 'https://testnet.kleverscan.org',
-    defaultMarketplaceId: 'klv1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpgm89z', // Update if different on testnet
+    defaultMarketplaceId: NFT_CONFIG.defaultMarketplaceId, // Same for testnet
   },
 };
 

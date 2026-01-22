@@ -126,7 +126,7 @@ export default function CollectionPage() {
   return (
     <MaintenanceWrapper pageId="nft">
       <main className="min-h-screen py-8 md:py-12 lg:py-16">
-        <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
+        <div className="max-w-dashboard mx-auto px-4 md:px-6 lg:px-8">
           
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-text-muted mb-6">
@@ -142,7 +142,7 @@ export default function CollectionPage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span className="text-text-primary truncate max-w-[200px]">
+            <span className="text-text-primary truncate max-w-48">
               {collection?.name || collectionId}
             </span>
           </div>
@@ -151,7 +151,7 @@ export default function CollectionPage() {
           {loading && !collection && (
             <div className="space-y-6">
               {/* Banner Skeleton */}
-              <div className="glass rounded-2xl p-6 md:p-8">
+              <div className="bg-bg-surface rounded-2xl border border-border-default p-6 md:p-8">
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-overlay-default animate-pulse mx-auto md:mx-0" />
                   <div className="flex-1 space-y-4">
@@ -170,7 +170,7 @@ export default function CollectionPage() {
               {/* Grid Skeleton */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="glass rounded-2xl p-3 md:p-4">
+                  <div key={i} className="bg-bg-surface rounded-2xl border border-border-default p-3 md:p-4">
                     <div className="aspect-square rounded-xl bg-overlay-default animate-pulse mb-3" />
                     <div className="space-y-2">
                       <div className="h-3 bg-overlay-default rounded animate-pulse w-1/2" />
@@ -184,7 +184,7 @@ export default function CollectionPage() {
 
           {/* Error State */}
           {error && (
-            <div className="glass rounded-2xl p-8 text-center">
+            <div className="bg-bg-surface rounded-2xl border border-border-default p-8 text-center">
               <div className="w-12 h-12 rounded-full bg-error-muted flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -233,7 +233,7 @@ export default function CollectionPage() {
                     className="
                       p-2.5 rounded-xl bg-bg-surface border border-border-default
                       text-text-secondary hover:text-text-primary hover:border-border-active
-                      transition-all duration-100 disabled:opacity-50
+                      tr-interactive disabled:opacity-50
                     "
                     title="Refresh"
                   >
@@ -257,7 +257,7 @@ export default function CollectionPage() {
                   onNFTClick={handleNFTClick}
                 />
               ) : !loading ? (
-                <div className="glass rounded-2xl p-8 md:p-12 text-center">
+                <div className="bg-bg-surface rounded-2xl border border-border-default p-8 md:p-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-overlay-default flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />

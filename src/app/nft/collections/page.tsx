@@ -52,9 +52,9 @@ export default function CollectionsPage() {
                   onClick={refresh}
                   disabled={loading}
                   className="
-                    p-2.5 rounded-xl glass border border-border-default
+                    p-2.5 rounded-xl bg-bg-surface border border-border-default
                     text-text-secondary hover:text-text-primary hover:border-border-active
-                    transition-all duration-100 disabled:opacity-50
+                    tr-interactive disabled:opacity-50
                   "
                   title="Refresh"
                 >
@@ -71,9 +71,9 @@ export default function CollectionsPage() {
                 <Link
                   href="/nft"
                   className="
-                    px-4 py-2.5 rounded-xl glass border border-border-default
+                    px-4 py-2.5 rounded-xl bg-bg-surface border border-border-default
                     text-text-secondary hover:text-text-primary hover:border-border-active
-                    transition-all duration-100 text-sm font-medium
+                    tr-interactive text-sm font-medium
                   "
                 >
                   View All NFTs
@@ -84,7 +84,7 @@ export default function CollectionsPage() {
 
           {/* Error State */}
           {error && (
-            <div className="glass rounded-2xl p-6 text-center mb-8">
+            <div className="bg-bg-surface rounded-2xl border border-border-default p-6 text-center mb-8">
               <div className="w-12 h-12 rounded-full bg-error-muted flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -118,7 +118,7 @@ export default function CollectionsPage() {
               ))}
             </div>
           ) : (
-            <div className="glass rounded-2xl p-8 md:p-12 text-center">
+            <div className="bg-bg-surface rounded-2xl border border-border-default p-8 md:p-12 text-center">
               <div className="w-16 h-16 rounded-full bg-overlay-default flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />

@@ -26,8 +26,8 @@ export function CollectionCard({ collection, showStats = true }: CollectionCardP
   return (
     <Link href={`/nft/collection/${encodeURIComponent(collection.assetId)}`}>
       <div className="
-        group relative glass rounded-2xl overflow-hidden transition-all duration-150
-        hover:border-border-active hover:bg-overlay-hover
+        group relative bg-bg-surface rounded-2xl overflow-hidden border border-border-default
+        tr-card hover:border-border-active hover:bg-bg-elevated
         cursor-pointer p-3 md:p-4
       ">
         {/* Image Container */}
@@ -42,8 +42,7 @@ export function CollectionCard({ collection, showStats = true }: CollectionCardP
             src={imageUrl}
             alt={collection.name}
             className={`
-              w-full h-full object-cover transition-all duration-150
-              
+              w-full h-full object-cover tr-opacity
               ${imageLoaded ? 'opacity-100' : 'opacity-0'}
             `}
             onLoad={() => setImageLoaded(true)}
@@ -62,15 +61,14 @@ export function CollectionCard({ collection, showStats = true }: CollectionCardP
             </div>
           )}
 
-          {/* Hover Overlay */}
+          {/* Hover Overlay - flat design */}
           <div className="
-            absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent
-            opacity-0 group-hover:opacity-100 transition-opacity duration-150
-            flex items-end justify-center pb-4
+            absolute inset-0 bg-bg-base/80
+            opacity-0 group-hover:opacity-100 tr-opacity
+            flex items-center justify-center
           ">
             <span className="
-              px-4 py-2 bg-brand-primary rounded-lg text-text-primary text-sm font-medium
-              transform translate-y-4 group-hover:translate-y-0 tr-transform
+              px-4 py-2 bg-brand-primary rounded-lg text-text-on-brand text-sm font-medium
             ">
               View Collection
             </span>
@@ -137,7 +135,7 @@ export function CollectionCard({ collection, showStats = true }: CollectionCardP
  */
 export function CollectionCardSkeleton() {
   return (
-    <div className="glass rounded-2xl overflow-hidden p-3 md:p-4">
+    <div className="bg-bg-surface rounded-2xl overflow-hidden border border-border-default p-3 md:p-4">
       {/* Image Skeleton */}
       <div className="aspect-square rounded-xl bg-overlay-default animate-pulse mb-3 md:mb-4" />
       
@@ -177,7 +175,7 @@ export function CollectionBanner({ collection, stats }: CollectionBannerProps) {
     : collection.logo || NFT_CONFIG.defaultNFTImage;
 
   return (
-    <div className="glass rounded-2xl p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+    <div className="bg-bg-surface rounded-2xl border border-border-default p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
       <div className="flex flex-col md:flex-row gap-6">
         {/* Collection Logo */}
         <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 mx-auto md:mx-0">
@@ -190,7 +188,7 @@ export function CollectionBanner({ collection, stats }: CollectionBannerProps) {
             className={`
               w-full h-full object-cover rounded-2xl
               ${imageLoaded ? 'opacity-100' : 'opacity-0'}
-              transition-opacity duration-150
+              tr-opacity
             `}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
@@ -237,7 +235,7 @@ export function CollectionBanner({ collection, stats }: CollectionBannerProps) {
           {/* Stats */}
           {stats && (
             <div className="flex flex-wrap justify-center md:justify-start gap-4 md:gap-6">
-              <div className="glass rounded-xl p-3 min-w-[80px]">
+              <div className="bg-overlay-default rounded-xl p-3 min-w-20">
                 <p className="text-2xs md:text-xs text-text-muted mb-0.5">Floor</p>
                 <p className="text-base md:text-lg font-mono font-semibold text-text-primary">
                   {stats.floorPrice > 0 
@@ -247,21 +245,21 @@ export function CollectionBanner({ collection, stats }: CollectionBannerProps) {
                 </p>
               </div>
               
-              <div className="glass rounded-xl p-3 min-w-[80px]">
+              <div className="bg-overlay-default rounded-xl p-3 min-w-20">
                 <p className="text-2xs md:text-xs text-text-muted mb-0.5">Listed</p>
                 <p className="text-base md:text-lg font-mono font-semibold text-text-primary">
                   {stats.listings}
                 </p>
               </div>
 
-              <div className="glass rounded-xl p-3 min-w-[80px]">
+              <div className="bg-overlay-default rounded-xl p-3 min-w-20">
                 <p className="text-2xs md:text-xs text-text-muted mb-0.5">Owners</p>
                 <p className="text-base md:text-lg font-mono font-semibold text-text-primary">
                   {stats.owners}
                 </p>
               </div>
 
-              <div className="glass rounded-xl p-3 min-w-[80px]">
+              <div className="bg-overlay-default rounded-xl p-3 min-w-20">
                 <p className="text-2xs md:text-xs text-text-muted mb-0.5">Items</p>
                 <p className="text-base md:text-lg font-mono font-semibold text-text-primary">
                   {stats.items > 0 ? stats.items.toLocaleString() : '--'}
@@ -269,7 +267,7 @@ export function CollectionBanner({ collection, stats }: CollectionBannerProps) {
               </div>
 
               {collection.royalties > 0 && (
-                <div className="glass rounded-xl p-3 min-w-[80px]">
+                <div className="bg-overlay-default rounded-xl p-3 min-w-20">
                   <p className="text-2xs md:text-xs text-text-muted mb-0.5">Royalty</p>
                   <p className="text-base md:text-lg font-mono font-semibold text-text-primary">
                     {(collection.royalties / 100).toFixed(1)}%

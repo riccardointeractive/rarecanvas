@@ -87,7 +87,7 @@ export function NFTFiltersBar({
               onClick={() => setShowFilters(!showFilters)}
               className={`
                 h-11 px-4 rounded-xl flex items-center gap-2
-                border transition-all duration-100
+                border tr-interactive
                 ${showFilters || hasActiveFilters
                   ? 'bg-brand-primary/10 border-border-brand text-brand-primary'
                   : 'bg-overlay-default border-border-default text-text-secondary hover:text-text-primary hover:border-border-active'
@@ -112,9 +112,9 @@ export function NFTFiltersBar({
                 onClick={() => onViewModeChange(mode.id as 'grid' | 'list')}
                 className={`
                   h-11 w-11 flex items-center justify-center
-                  transition-all duration-100
+                  tr-colors
                   ${viewMode === mode.id
-                    ? 'bg-brand-primary text-text-primary'
+                    ? 'bg-brand-primary text-text-on-brand'
                     : 'bg-overlay-default text-text-secondary hover:text-text-primary'
                   }
                 `}
@@ -187,7 +187,7 @@ export function NFTFiltersBar({
                 disabled={!hasActiveFilters}
                 className={`
                   h-10 px-4 rounded-lg text-sm font-medium
-                  transition-all duration-100
+                  tr-colors
                   ${hasActiveFilters
                     ? 'bg-overlay-default text-text-primary hover:bg-overlay-active'
                     : 'bg-overlay-subtle text-text-muted cursor-not-allowed'

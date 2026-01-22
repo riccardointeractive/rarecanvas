@@ -66,15 +66,15 @@ export function NFTDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/80"
+      <div
+        className="absolute inset-0 bg-backdrop"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="
-        relative w-full max-w-4xl max-h-[90vh] overflow-hidden
-        glass rounded-3xl border border-border-default
+        relative w-full max-w-4xl max-h-screen-90 overflow-hidden
+        bg-bg-surface rounded-2xl border border-border-default
         animate-fade-in
       ">
         {/* Close Button */}
@@ -82,10 +82,10 @@ export function NFTDetailModal({
           onClick={onClose}
           className="
             absolute top-4 right-4 z-10
-            w-10 h-10 rounded-full bg-black/50
+            w-10 h-10 rounded-full bg-overlay-default
             flex items-center justify-center
-            text-text-secondary hover:text-text-primary
-            transition-colors duration-100
+            text-text-secondary hover:text-text-primary hover:bg-overlay-hover
+            tr-colors
           "
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -94,9 +94,9 @@ export function NFTDetailModal({
         </button>
 
         {/* Content Grid */}
-        <div className="grid md:grid-cols-2 max-h-[90vh] overflow-y-auto">
+        <div className="grid md:grid-cols-2 max-h-screen-90 overflow-y-auto">
           {/* Image Section */}
-          <div className="relative aspect-square md:aspect-auto md:h-full bg-black/30">
+          <div className="relative aspect-square md:aspect-auto md:h-full bg-overlay-default">
             {!imageLoaded && (
               <div className="absolute inset-0 bg-overlay-default animate-pulse" />
             )}
@@ -200,7 +200,7 @@ export function NFTDetailModal({
                     onClick={() => setActiveTab(tab)}
                     className={`
                       px-4 py-3 text-sm font-medium capitalize
-                      border-b-2 -mb-px transition-colors duration-100
+                      border-b-2 -mb-px tr-colors
                       ${activeTab === tab
                         ? 'border-border-brand text-text-primary'
                         : 'border-transparent text-text-muted hover:text-text-primary'

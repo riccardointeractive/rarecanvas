@@ -77,9 +77,9 @@ export function NFTHeader({ activeTab, onTabChange, totalListings }: NFTHeaderPr
               onClick={() => onTabChange(tab.id)}
               className={`
                 flex items-center gap-2 px-4 py-2.5 md:px-5 md:py-3 rounded-lg font-medium text-sm md:text-base
-                transition-all duration-100
+                tr-colors
                 ${activeTab === tab.id
-                  ? 'bg-brand-primary text-text-primary shadow-lg shadow-brand-primary/20'
+                  ? 'bg-brand-primary text-text-on-brand'
                   : 'text-text-secondary hover:text-text-primary hover:bg-overlay-default'
                 }
               `}
@@ -95,9 +95,9 @@ export function NFTHeader({ activeTab, onTabChange, totalListings }: NFTHeaderPr
           href="/nft/collections"
           className="
             flex items-center gap-2 px-4 py-2.5 md:px-5 md:py-3 rounded-xl
-            glass border border-border-default text-text-secondary
-            hover:text-text-primary hover:border-border-active hover:bg-overlay-default
-            transition-all duration-100 text-sm md:text-base font-medium
+            bg-bg-surface border border-border-default text-text-secondary
+            hover:text-text-primary hover:border-border-active hover:bg-bg-elevated
+            tr-interactive text-sm md:text-base font-medium
           "
         >
           <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
