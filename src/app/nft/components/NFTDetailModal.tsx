@@ -1,11 +1,11 @@
 /**
  * NFTDetailModal Component
- * 
+ *
  * Modal for viewing NFT details, attributes, and actions.
  * Includes buy/sell functionality.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { NFT, NFTListing } from '../types/nft.types';
 import { formatNFTPrice, NFT_CONFIG } from '../config/nft.config';
 import { useKlever } from '@/context/KleverContext';
@@ -40,20 +40,22 @@ export function NFTDetailModal({
     }
   }, [isOpen]);
 
-  // Handle escape key
+  // Handle escape key and body scroll
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.body.style.overflow = '';
+      };
     }
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, onClose]);
+    return undefined;
+  }, [isOpen, handleEscape]);
 
   if (!isOpen || !nft) return null;
 
