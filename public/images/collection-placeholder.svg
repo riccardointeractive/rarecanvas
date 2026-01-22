@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <rect width="400" height="400" fill="#121214"/>
+  <rect x="20" y="20" width="360" height="360" rx="24" fill="#1C1C1E" stroke="#333" stroke-width="2"/>
+  
+  <!-- Stacked cards effect -->
+  <rect x="80" y="100" width="180" height="180" rx="16" fill="#252528" stroke="#444" stroke-width="2"/>
+  <rect x="100" y="80" width="180" height="180" rx="16" fill="#2A2A2D" stroke="#444" stroke-width="2"/>
+  <rect x="120" y="60" width="180" height="180" rx="16" fill="#303033" stroke="#0066FF" stroke-width="2"/>
+  
+  <!-- Icon on top card -->
+  <path d="M180 130 L210 100 L240 130" stroke="#0066FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M195 130 L210 110 L225 130" stroke="#00D4FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="255" cy="105" r="12" fill="#0066FF" opacity="0.5"/>
+  
+  <text x="200" y="340" text-anchor="middle" fill="#666" font-family="system-ui, sans-serif" font-size="20" font-weight="500">Collection</text>
+</svg>

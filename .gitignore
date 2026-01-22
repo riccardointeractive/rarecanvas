@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+
+# Environment variables
+.env*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Temporary files
+temp/
+kleverchain.workspace.json
+
+# Build artifacts
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Contract build artifacts (CRITICAL - can reach 300+ MB)
+contract/target/
+contract/meta/
+contract/output/
+contract-ctr-kart/target/
+contract-ctr-kart/output/
+contract-ctr-kart/meta/target/
+contract-ctr-kart/wasm/target/
+contract-planet-survival/target/
+contract-planet-survival/output/
+contract-planet-survival/meta/target/
+contract-planet-survival/wasm/target/
+**/Cargo.lock
+
+# Rust build artifacts
+*.o
+*.rlib
+*.rmeta
+*.d
+
+# IDE
+.vscode/
+
+# Backup files
+*.backup
+
+# Vercel (created locally)
+.vercel
+
+# kleverSDK (vendor files)
+kleverSDK/
+public/kleverSDK/
+
+# Keep this for TypeScript
+!next-env.d.ts
+.env*.local
+
+contract/wasm/target/

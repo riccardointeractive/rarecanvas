@@ -1,0 +1,15 @@
+[package]
+name = "digiko-swap"
+version = "0.1.0"
+authors = ["Digiko Team"]
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies.klever-sc]
+version = "0.44.0"
+
+[dev-dependencies.klever-sc-scenario]
+version = "0.44.0"

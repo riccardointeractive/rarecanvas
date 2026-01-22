@@ -1,0 +1,2299 @@
+Node Operations
+Here are all the operations related to nodes on Klever Blockchain
+
+This segment presents instructions on how to set up a new node on the Klever network, its system requirements and how to update its status, as well as a quick introduction to Klever's technology.
+
+Introduction
+A Deep Dive Into Klever Blockchain
+
+Blockchain is difficult, but it shouldn't be.
+
+1. What is Klever
+Klever Blockchain is a trusted permissionless blockchain network for the emerging decentralized economy, providing a safer, faster and smarter cryptocurrency experience for all users globally to enter and thrive.
+
+A blockchain network does not have an intrinsic value in and of itself, but in fact is only as valuable as what the platform offers its users in terms of usable products and opportunities to participate in the network.
+
+With this in mind, we present Klever Blockchain to allow users on a global scale to access indispensable services and products. These include market-leading crypto wallet, crypto swap, web browser, exchange, staking, payment channels, loans, liquidity pools, decentralized finance, game assets, supply chains, logistic records, notary, stored value, gift cards, rewards, loyalty programs, collectibles, banking, ownership and more.
+
+We strive to create a network where trustless technologies empower businesses and individuals in an open global economy using secure, fast and innovative on-chain peer-to-peer applications.
+
+2. Architecture Overview
+Building and deploying blockchain apps should be simple, cheap, and easy for all developers to do, and that is exactly what Klever Blockchain enables.
+
+Instead of being a smart-contracts platform, Klever Blockchain will provide prebuilt and ready-to-use functionalities for developers to build decentralized applications.
+
+Our goal is to have a secure and efficient blockchain coordinated by a Proof of Stake consensus mechanism composed of 21 validators, which are randomly selected among the masternodes for the consensus group in each Epoch.
+
+Nodes will sign-off messages broadcasted to the network building a reliability rank of each operator. Nodes with bad behavior will be jailed. Until this jail time isn’t cleared, those ill-behaved nodes will not participate in the validators selection pool.
+
+On top of that, a customized version of the Practical Byzantine Fault Tolerance algorithm (PBFT) was implemented for network reliability and resilience, ensuring a fast full confirmation of blocks.
+
+System Requirements
+What you need to run a node on Klever Blockchain.
+
+To run a node on Klever Blockchain, you need the following minimum setup:
+
+A CPU with 4 cores.
+A RAM with 8GB.
+An SSD with 200 GB.
+An internet connection speed of at least 100 Mbps.
+Linux or MacOS.
+To start with Klever blockchain, make sure you have Docker installed and download the latest Klever Toolchain image.
+Follow instructions on https://docs.docker.com/engine/install to install Docker.
+
+To download Klever Toolchain, type:
+
+docker pull kleverapp/klever-go:latest
+
+Copy
+Copied!
+Warning: Before running the following Docker commands, you'll need to change the ownership of your local files to user ID 999: chown -R 999 .
+
+How To Create A Wallet
+To create a wallet, choosing the output folder, first create the output folder and then run the operator with create-wallet command:
+
+mkdir wallet
+
+Copy
+Copied!
+docker run -it --rm \
+    -v $(pwd)/wallet:/opt/klever-blockchain \
+    --entrypoint=/usr/local/bin/operator \
+    kleverapp/klever-go:latest account create
+
+Copy
+Copied!
+This will generate the wallet and return the address asociated with it, as seen below:
+
+
+
+If the output directory does not exist, it will be created but you may run into file permission issues.
+
+To check your wallet certificate and address, type:
+
+docker run -it --rm \
+    -v $(pwd)/wallet:/opt/klever-blockchain \
+    --entrypoint=/usr/local/bin/operator \
+    kleverapp/klever-go:latest account address
+
+Copy
+Copied!
+This should show your address, as seen below:
+
+
+
+How To Run A Node
+Commands to run a node
+
+Klever nodes run inside a docker container, check System Requirements section to download Klever Toolchain first.
+
+Create statics directory
+Create a folder where all the data will be stored:
+
+mkdir -p $(pwd)/node/config $(pwd)/node/db $(pwd)/node/logs
+
+Copy
+Copied!
+Network genesis config
+Download latest config file and extract into your config directory
+
+For MainNet
+
+curl -k https://backup.mainnet.klever.org/config.mainnet.108.tar.gz \
+    | tar -xz -C ./node
+
+Copy
+Copied!
+For TestNet
+
+curl -k https://backup.testnet.klever.org/config.testnet.109.tar.gz \
+    | tar -xz -C ./node
+
+Copy
+Copied!
+Create your validator BLS Key
+Execute a command inside the docker container to create wallets for validators. The data is then forwarded to the directory created previously.
+
+docker run -it --rm -v $(pwd)/node/config:/opt/klever-blockchain \
+    --entrypoint='' kleverapp/klever-go:latest keygenerator
+
+Copy
+Copied!
+Run your node the first time
+The command for running a node comes with a few settings: it includes mappings for cryptographic keys, data directories and logs, as well as network ports, the application that will run when the docker image is executed and the file of node validators signature.
+
+MainNet
+
+docker run -it --rm \
+    --name klever-node \
+    -v $(pwd)/node/config:/opt/klever-blockchain/config/node \
+    -v $(pwd)/node/db:/opt/klever-blockchain/db \
+    -v $(pwd)/node/logs:/opt/klever-blockchain/logs \
+    --network=host \
+    --entrypoint=/usr/local/bin/validator \
+    kleverapp/klever-go:latest \
+    '--log-save' '--rest-api-interface=0.0.0.0:8080'
+
+Copy
+Copied!
+The table below shows what each part of the command is supposed to do.
+
+Import genesis config and the generated .pem file (BLS Key).
+
+-v $(pwd)/node/db:/opt/klever-blockchain/db
+
+Select the destination DB folder.
+
+-v $(pwd)/node/logs:/opt/klever-blockchain/logs
+
+Save log files and set the log folders
+
+-v $(pwd)/config:/opt/klever-blockchain/config/node
+
+If one wants to monitor the node using log files, the flag --use-log-view must be passed. Otherwise, the standard view is a visual interface as seen below.
+
+When you are done setting up and running your node, you are expected to see information about your node, the blockchain itself, as well as data from your own computer, just like the example below:
+
+A node running, showing how many blocks were proposed and accepted, current blocks, slots and connected nodes, last generated hash, computational information, epoch and network processes and a basic log info segment.
+
+Run node in the background the first time
+When running in the background, add parameter --use-log-view and replace --rm for -d
+
+docker run -it -d --restart unless-stopped \
+    --name klever-node \
+    -v $(pwd)/node/config:/opt/klever-blockchain/config/node \
+    -v $(pwd)/node/db:/opt/klever-blockchain/db \
+    -v $(pwd)/node/logs:/opt/klever-blockchain/logs \
+    --network=host \
+    --entrypoint=/usr/local/bin/validator \
+    kleverapp/klever-go:latest \
+    '--log-save' '--use-log-view' '--rest-api-interface=0.0.0.0:8080'
+
+Copy
+Copied!
+If you are running your node in the background, you can either verify logs in ./node/logs folder or use the docker command:
+
+docker logs -f --tail 5 klever-node
+
+Copy
+Copied!
+You can speed up your node's first synchronization by using the FullNode database backup
+
+For MainNet
+
+curl -k https://backup.mainnet.klever.org/kleverchain.mainnet.latest.tar.gz \
+    | tar -xz -C ./node
+
+Copy
+Copied!
+For TestNet
+
+curl -k https://backup.testnet.klever.org/kleverchain.testnet.latest.tar.gz   | tar -xz -C ./node
+
+Copy
+Copied!
+You can also opt for using fast sync with --start-in-epoch flag. This will indicate node to download last epoch only and start sync from there.
+
+After the first node run, the subsequent commands must remove the flag --start-in-epoch.
+
+This flag is only for node initialization without a db, if the node already has a db, you just need to sync from the last block saved or delete the database and start from the last epoch info.
+
+Are You On Windows
+If you're using Windows OS, there a few steps before running your node.
+
+First of all, you need to install WSL, which is a way of using Linux inside your windows system. Make sure you have the 2.0 version.
+
+Then, you should install a Linux distribution of your preference through the Microsoft Store app, which comes with Microsoft Windows (you could just type 'store' on the search bar).
+
+And finally, you need to install Docker and enable the integration with WSL, on the settings menu.
+
+Now, you are good to go. You can use the following instructions on the Linux environment to run your node, being attentive to user permission (typing 'sudo' before the following commands will mostly solve any problems).
+
+Download Klever node
+
+Download the application from Klever's repository using docker:
+
+docker pull kleverapp/klever-go:latest
+
+Copy
+Copied!
+Create statics directory
+
+Create a folder where all the data will be stored:
+
+mkdir -p $(pwd)/node/config $(pwd)/node/db $(pwd)/node/logs
+
+Copy
+Copied!
+Create your validator BLS Key
+
+Execute a command inside the docker container to create wallets for validators. The data is then forwarded to the directory created previously.
+
+docker run -it --rm -v $(pwd)/node:/opt/klever-blockchain \
+    --entrypoint='' kleverapp/klever-go:latest keygenerator
+
+Copy
+Copied!
+Run your node
+
+The command for running a node comes with a few settings: it includes mappings for cryptographic keys, data directories and logs, as well as network ports, the application that will run when the docker image is executed and the file of node validators signature.
+
+docker run -it --rm \
+    --name klever-node \
+    -v $(pwd)/node/confgi:/opt/klever-blockchain/config/node \
+    -v $(pwd)/node/db:/opt/klever-blockchain/db \
+    -v $(pwd)/node/logs:/opt/klever-blockchain/logs \
+    --network=host \
+    --entrypoint=/usr/local/bin/validator \
+    kleverapp/klever-go-testnet:latest \
+    '--log-save' '--rest-api-interface=0.0.0.0:8080'
+
+Copy
+Copied!
+When you are done setting up and running your node, you are expected to see information about your node, the blockchain itself, as well as data from your own computer, just like the example below:
+
+A node running, showing how many blocks were proposed and accepted, current blocks, slots and connected nodes, last generated hash, computational information, epoch and network processes and a basic log info segment.
+
+How To Stop A Node
+Stop a node with the following command:
+
+docker stop klever-node
+
+Copy
+Copied!
+How To Restart A Node
+Restart the node:
+
+docker restart klever-node
+
+Copy
+Copied!
+How To Backup Db Folder
+First, you need to stop the node:
+
+docker stop klever-node
+
+Copy
+Copied!
+Then compress the DB folder:
+
+tar -czvf filename.tar.gz $(pwd)/node/db
+
+Copy
+Copied!
+How To Upgrade Node Docker Image Version
+First, stop the node:
+
+ docker stop klever-node
+
+Copy
+Copied!
+Upgrade image:
+
+docker pull kleverapp/klever-go:latest
+
+Copy
+Copied!
+Then you can recreate the node with a new image. Don't forget to delete the container if running in the background:
+
+docker rm klever-node
+
+Copy
+Copied!
+How to Set Up Your Own Indexer
+A Indexer is a specialized node that connects to Elasticsearch to store and organize blockchain data in a searchable format. This allows for efficient querying and retrieval of blockchain information such as transactions, blocks, accounts, and other network data. Additionally, once you have an indexer running, you can enable WebSocket subscriptions for real-time blockchain data monitoring.
+
+Prerequisites
+Docker and Docker Compose installed on your system
+Basic understanding of Klever node operations
+Sufficient system resources, especially for Elasticsearch (minimum 4GB RAM recommended)
+Elasticsearch knowledge for production setups
+Setting Up the Indexer
+What you will learn:
+
+Enable and configure the Elasticsearch connector in the external.yaml file
+Start your node with the external.yaml configuration properly set with Elasticsearch connector enabled
+Verify the setup by checking for the confirmation message: "Node is running with a valid indexer"
+1. Set Up Elasticsearch
+The most resource-intensive part is Elasticsearch itself. Here's a Docker Compose setup for development:
+
+Folder Structure:
+
+your-folder/
+├── docker-compose.yml
+└── elasticsearch/
+    ├── elasticsearch.yml
+    └── jvm.options
+
+Copy
+Copied!
+docker-compose.yml:
+
+version: '3'
+
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=klever-cluster
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - network.host=0.0.0.0
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/jvm.options:/usr/share/elasticsearch/config/jvm.options.d/jvm.options
+    ports:
+      - 9200:9200
+volumes:
+  data01:
+    driver: local
+
+Copy
+Copied!
+elasticsearch/jvm.options:
+
+-Xms4g
+-Xmx4g
+
+Copy
+Copied!
+elasticsearch/elasticsearch.yml:
+
+cluster.name: klever-cluster
+node.name: klever-es-node-1
+bootstrap.memory_lock: true
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.cors.allow-methods: OPTIONS, HEAD, GET, POST, PUT, DELETE
+http.cors.allow-headers: X-Requested-With,X-Auth-Token,Content-Type,Content-Length
+xpack.security.enabled: false
+xpack.license.self_generated.type: basic
+
+Copy
+Copied!
+2. Start Elasticsearch
+Run in your folder:
+
+docker-compose up -d
+
+Copy
+Copied!
+This will expose Elasticsearch on port 9200. Verify it's running:
+
+docker ps
+
+Copy
+Copied!
+3. Configure external.yaml
+Configure your node's external.yaml file to connect to Elasticsearch:
+
+elasticSearchConnector:
+  enabled: true
+  indexerCacheSize: 100
+  url: http://localhost:9200
+  useKibana: true
+  username:
+  password:
+  enabledIndexes:
+    - transactions
+    - blocks
+    - accounts
+    - accountshistory
+    - assets
+    - proposals
+    - marketplaces
+    - network-parameters
+    - rating
+    - epoch
+    - accountskda
+    - peersaccounts
+    - marketplaceorders
+    - itos
+    - kdapools
+    - logs
+    - scdeploys
+
+Copy
+Copied!
+4. Start Your Node
+Start your Klever node with the updated configuration. On startup, you should see the confirmation message:
+
+"Node is running with a valid indexer"
+
+Copy
+Copied!
+This confirms that your node is now acting as an indexer.
+
+5. WebSocket Endpoint
+Once the indexer is running, your node will expose a WebSocket endpoint for real-time data:
+
+ws://your-node-ip:8080/subscribe
+
+Copy
+Copied!
+Important Notes
+Production Considerations:
+
+Its is recommended to not run a node as both validator and indexer - use a dedicated observer node for indexing
+Resource intensive - Elasticsearch requires considerable RAM and storage
+Production clusters - Setting up a production-grade Elasticsearch cluster is beyond the scope of this tutorial. Please refer to the official documentation for detailed instructions.
+Resource Requirements:
+
+Minimum 4GB RAM for Elasticsearch JVM
+Additional storage for indexed data
+Network bandwidth for real-time data processing
+How To Set Up A Fallback Node
+Set up a redundant backup node for high availability
+
+A fallback node (also known as a redundancy node) provides high availability by automatically taking over when the main node becomes inactive. This ensures continuous operation of your validator without manual intervention.
+
+Understanding Redundancy Levels
+The Klever Blockchain supports different redundancy levels:
+
+-1: Redundancy disabled
+0: Main instance (default)
+1: First backup node
+2: Second backup node
+3+: Additional backup levels
+Configuration Steps
+1. Configure the redundancyLevel in your config.yaml file
+preferences:
+  # RedundancyLevel represents the level of redundancy used by the node (-1 = disabled, 0 = main instance (default),
+  # 1 = first backup, 2 = second backup, etc.)
+  redundancyLevel: 1
+
+Copy
+Copied!
+2. For main node (redundancyLevel: 0)
+Your main node should be configured with redundancyLevel: 0 (which is the default). No additional configuration is needed.
+
+3. For backup nodes (redundancyLevel: 1, 2, 3...)
+Configure backup nodes with the appropriate redundancy level. Higher numbers indicate lower priority backups.
+
+preferences:
+  redundancyLevel: 1  # First backup
+
+Copy
+Copied!
+How It Works
+Main Node Active: The main node (level 0) operates normally while backup nodes remain inactive
+Main Node Inactive: If the main node fails to participate in consensus for 5 consecutive slots, the first backup node (level 1) automatically becomes active
+Cascading Failover: If the first backup also fails, the second backup (level 2) takes over, and so on
+Running Your Fallback Node
+Use the same docker command as a regular node, but ensure your config.yaml file has the correct redundancyLevel:
+
+docker run -it --rm \
+    --name klever-fallback-node \
+    -v $(pwd)/node/config:/opt/klever-blockchain/config/node \
+    -v $(pwd)/node/db:/opt/klever-blockchain/db \
+    -v $(pwd)/node/logs:/opt/klever-blockchain/logs \
+    --network=host \
+    --entrypoint=/usr/local/bin/validator \
+    kleverapp/klever-go:latest \
+    '--log-save' '--rest-api-interface=0.0.0.0:8080'
+
+Copy
+Copied!
+Monitoring Redundancy Status
+You can monitor your node's redundancy status through:
+
+Node logs: Check if your node is active or in backup mode
+REST API: Query the node status endpoint to see redundancy information
+Visual interface: The node's terminal interface shows redundancy level and status
+Best Practices
+Geographic Distribution: Deploy backup nodes in different locations for maximum availability
+Network Connectivity: Ensure all nodes have reliable internet connections
+Regular Monitoring: Monitor all nodes to ensure they're ready to take over when needed
+Database Backups: Keep database backups synchronized between main and backup nodes
+How To Send Using Cli
+To use your wallet with Klever Toolchain, you will need to map your wallet private key (the .pem file created in the session How to create a wallet) into the toolchain by adding:
+
+-v $(pwd)/wallet:/opt/klever-blockchain
+
+Or if you are using a self-hosted node, use --network=host to access the local node API. You can also use a public node by adding an environment variable into the toolchain:
+
+-e KLEVR_NODE=https://node.mainnet.klever.org
+
+Send tokens with the following code:
+
+docker run -it --rm \
+    -v $(pwd)/wallet:/opt/klever-blockchain \
+    --network=host \
+    --entrypoint=/usr/local/bin/operator \
+    kleverapp/klever-go:latest \
+    --key-file=./walletKey.pem \
+    --node=https://node.mainnet.klever.org \
+    account send klv1h7vx629mwuv4pnecn0k9clxp9rt7rquat3kvydgu8npt20e0ntjq3jhd40 137
+
+Copy
+Copied!
+On the last line, after the "send" command (send klv1h7vx629mwuv4pnecn0k9clxp9rt7rquat3kvydgu8npt20e0ntjq3jhd40 137), the code represents the following scheme: [TO] [AMOUNT].
+
+[TO] is the address to whom the tokens are being sent.
+
+[AMOUNT] is how much is being sent.
+
+--kda is the Asset ID.
+
+If no --kda is passed, as in the example above, the default KDA is KLV.
+
+Here is another example, sending KFI:
+
+docker run -it --rm \
+    -v $(pwd)/wallet:/opt/klever-blockchain \
+    --network=host \
+    --entrypoint=/usr/local/bin/operator \
+    kleverapp/klever-go:latest \
+    --key-file=./walletKey.pem \
+    --node=https://node.mainnet.klever.org \
+    account send klv1h7vx629mwuv4pnecn0k9clxp9rt7rquat3kvydgu8npt20e0ntjq3jhd40 \
+    137 --kda=KFI
+
+Copy
+Copied!
+How to Unjail a Validator
+Understanding these common causes will help you prevent future jailing incidents:
+
+Low Rating: Rating drops below minimum threshold due to missed blocks/signatures
+Consecutive Missed Blocks: Failing to propose blocks when selected as leader
+Poor Validator Performance: Missing validator signatures consistently
+Network Issues: Connection problems preventing participation in consensus
+Prerequisites
+Before attempting to unjail your validator, ensure you have:
+
+Root Cause Resolution: Fixed the underlying issue that caused the jailing
+Node Synchronization: Your validator node is running and fully synchronized
+Owner Account Access: Access to the validator owner's private key (.pem file)
+Network Connectivity: Stable connection to Klever network
+Sufficient KLV Balance: Ensure the owner account has enough KLV to cover transaction fees
+Using Klever Operator CLI
+operator validator unjail [OWNER_ADDRESS] [flags]
+
+Copy
+Copied!
+What Happens When Unjailing
+The unjailing process performs several important operations:
+
+Immediate Effects:
+Rating Reset: Validator's rating is reset to the starting rating (5,000,001)
+Temporary Rating Clear: Any temporary rating penalties are removed
+List Migration: Validator moves from "Jailed" to "Waiting" list
+Post-Unjail Process:
+Queue Position: Validator enters the waiting queue for selection
+Index Assignment: Gets a new position based on current block nonce
+Eligibility Wait: May take 1-3 epochs to become eligible for selection
+Selection Process: Must wait to be selected for active validation again
+All Cli Operations
+If you are using your local node, you should use the regular command:
+
+operator [command] [arguments] --[flags]
+
+Copy
+Copied!
+If you are using the docker image operator, use the generic command version:
+
+docker run -it --rm \
+    -v $(pwd)/wallet:/opt/klever-blockchain \
+    --network=host \
+    --entrypoint=/usr/local/bin/operator \
+    kleverapp/klever-go:latest \
+    --key-file=./walletKey.pem \
+    --node=https://node.mainnet.klever.org \
+    [command] [arguments] --[flags]
+
+Copy
+Copied!
+Operator
+Klever Operator
+
+Synopsis
+
+OPERATOR interface to Klever Blockchain
+
+Type 'operator --help' for details
+operator [flags]
+
+Copy
+Copied!
+Options
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+  -h, --help                      help for operator
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+operator broadcast - broadcast a transaction
+operator fb -
+operator gov - governance actions
+operator kapps - kapps actions
+operator kda - kda actions
+operator sign - sign a transaction
+operator tx-by-id - get transaction by id
+operator validator - validator actions
+operator version - Show version
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account
+account actions
+
+operator account [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for address
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+operator account address - returns wallet address
+operator account allowance - return account allowance on a given KDA
+operator account balance - returns wallet balance
+operator account batchsend - create several transfer transactions: batchsend --values Addr1=Val1 Addr2=Val2...
+operator account claim - claim transaction
+operator account create - create a new wallet PEM file
+operator account CSV - send transactions based on a CSV file
+operator account delegate - delegate a bucket to a validator
+operator account export-sk - export-sk: print hex-encoded private key from a PEM file
+operator account freeze - freeze an asset
+operator account import-sk - import-sk: creates a PEM file from a hex-encoded secret key
+operator account info - returns account details
+operator account permission - set wallet permission
+operator account send - create a transfer transaction: send [TO][AMOUNT]
+operator account set-name - set an account name
+operator account undelegate - undelegate bucket id
+operator account unfreeze - unfreeze asset bucket
+operator account withdraw - withdraw asset
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Address
+returns wallet address
+
+operator account address [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for address
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Allowance
+return account allowance on a given KDA
+
+operator account allowance  [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for allowance
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Balance
+returns wallet balance
+
+operator account balance 
+ [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for balance
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Batchsend
+create several transfer transactions: batchsend --values Addr1=Val1 Addr2=Val2 ...
+
+operator account batchsend [flags]
+
+Copy
+Copied!
+Options
+  -h, --help                    help for batchsend
+      --kda string              --kda=KDAID-0000 (default "KLV")
+      --values stringToString   --values 'addr1=val1, addr2=val2, addr3=val3' (default [])
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Claim
+claim transaction
+
+operator account claim [CLAIM_TYPE] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help        help for claim
+      --id string   --id=KDAID-00000 (default "KLV")
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Create
+create new wallet pem file
+
+operator account create [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for create
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Csv
+send transactions based on CSV file
+
+operator account csv FILENAME [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for csv
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Delegate
+delegate bucket to validator
+
+operator account delegate [TO] [flags]
+
+Copy
+Copied!
+Options
+      --bucketID string   --bucketID=000...000
+  -h, --help              help for delegate
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Export Sk.Js
+export-sk print hex encoded private key from pem file
+
+operator account export-sk [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for export-sk
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Export Sk
+export-sk print hex encoded private key from pem file
+
+operator account export-sk [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for export-sk
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Freeze
+freeze asset
+
+operator account freeze [AMOUNT] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help         help for freeze
+      --kda string   --kda=KDAID-00000 (default "KLV")
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Import Sk
+import-sk creates pem file from hex encoded secret key
+
+operator account import-sk [flags]
+
+Copy
+Copied!
+Options
+  -h, --help          help for import-sk
+      --path string   file to be generated
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Info
+returns account details
+
+operator account info 
+ [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for info
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Permission
+set wallet permission
+
+operator account permission [flags]
+
+Copy
+Copied!
+Options
+  -h, --help               help for permission
+      --perm stringArray   --perm='{"type":1, "threshold": 2, "operations":"0fff", "signers": [{"address":"klv1fpwjz234gy8aaae3gx0e8q9f52vymzzn3z5q0s5h60pvktzx0n0qwvtux5", "weight": 1},{"address":"klv18cgjm6mfahuvnl3vj8kx3fph8qvth048we0486cd8xp9nenm4saqg0h9jl", "weight": 1}]}'
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Send
+create a transfer transaction: send [TO] [AMOUNT]
+
+operator account send [TO] [AMOUNT] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help         help for send
+      --kda string   --kda=KDAID-0000 (default "KLV")
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Set Name
+set an account name
+
+operator account set-name [NAME] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for set-name
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Undelegate
+undelegate bucket id
+
+operator account undelegate [flags]
+
+Copy
+Copied!
+Options
+      --bucketID string   --bucketID=000...000
+  -h, --help              help for undelegate
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Unfreeze
+unfreeze asset bucket
+
+operator account unfreeze [flags]
+
+Copy
+Copied!
+Options
+      --bucketID string   --bucketID=000...000
+  -h, --help              help for unfreeze
+      --kda string        --kda=KDAID-00000 (default "KLV")
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account Withdraw
+withdraw asset
+
+operator account withdraw [flags]
+
+Copy
+Copied!
+Options
+  -h, --help         help for withdraw
+      --kda string   --kda=KDAID-00000 (default "KLV")
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator account - account actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Account
+account actions
+
+operator account [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for account
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+operator account address - returns wallet address
+operator account allowance - return account allowance on a given KDA
+operator account balance - returns wallet balance
+operator account batchsend - create several transfer transactions: batchsend --values Addr1=Val1 Addr2=Val2...
+operator account claim - claim transaction
+operator account create - create a new wallet PEM file
+operator account CSV - send transactions based on a CSV file
+operator account delegate - delegate a bucket to a validator
+operator account export-sk - export-sk: print hex-encoded private key from a PEM file
+operator account freeze - freeze an asset
+operator account import-sk - import-sk: creates a PEM file from a hex-encoded secret key
+operator account info - returns account details
+operator account permission - set wallet permission
+operator account send - create a transfer transaction: send [TO][AMOUNT]
+operator account set-name - set an account name
+operator account undelegate - undelegate bucket id
+operator account unfreeze - unfreeze asset bucket
+operator account withdraw - withdraw asset
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Broadcast
+broadcast a transaction
+
+operator broadcast [Transaction] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for broadcast
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Fb
+operator fb [Address/TXHASH] [flags]
+
+Copy
+Copied!
+Options
+      --fb-node string   forwarding to
+  -h, --help             help for fb
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Gov Create Proposal
+create a network proposal upgrade
+
+operator gov create-proposal [flags]
+
+Copy
+Copied!
+Options
+      --description string          --description description of the proposal
+      --duration uint32             --duration [epochs] (default = 4) (default 4)
+  -h, --help                        help for create-proposal
+      --parameters stringToString   --parameters '0=10000,1=250000,5=1000' (default [])
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator gov - governance actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Gov Vote
+vote for network proposal
+
+operator gov vote [PROPOSAL_ID] [VOTE_AMOUNT] [VOTE_TYPE] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for vote
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator gov - governance actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Gov
+governance actions
+
+operator gov [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for gov
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+operator gov create-proposal - create a network proposal upgrade
+operator gov vote - vote for network proposal
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Buy
+buy transaction
+
+operator kapps buy [flags]
+
+Copy
+Copied!
+Options
+      --amount float            set a buy amount
+      --currencyAmount float    locks the currency amount to be spent
+  -h, --help                    help for buy
+      --id string               set a buy ID
+      --kda string              set a KDA ID
+      --type int32              set a buy type
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Cancel Market
+cancel-market transaction
+
+operator kapps cancel-market [MARKET_ID] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for cancel-market
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Config Ito
+config an ITO transaction
+
+operator kapps config-ito [flags]
+
+Copy
+Copied!
+Options
+      --endTime int                set ITO end time
+  -h, --help                       help for config-ito
+      --kda string                 set a KDA ID
+      --limitPerAddress int        set limit per address
+      --maxAmount float            set an ITO max amount
+      --packs stringArray          --packs='{"kda":"KLV", "packs": [{"amount": 1000, "price": 2},{"amount":2000, "price": 1}]}'
+      --receiver string            set an ITO receiver address
+      --startTime int              set ITO start time
+      --status int32               set ITO status
+      --whitelist stringToString   --whitelist 'klv...=1,klv...=2, klv...=3' (default [])
+      --whitelistEndTime int       set ITO whitelist end time
+      --whitelistStartTime int     set ITO whitelist start time
+      --whitelistStatus int32      set ITO whitelist status
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Config Marketplace
+config marketplace transaction
+
+operator kapps config-marketplace [flags]
+
+Copy
+Copied!
+Options
+  -h, --help               help for config-marketplace
+      --id string          set a marketplace ID
+      --name string        set a marketplace name
+      --percentage float   set a referral percentage
+      --referral string    set a referral address
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Create Marketplace
+create marketplace transaction
+
+operator kapps create-marketplace [flags]
+
+Copy
+Copied!
+Options
+  -h, --help               help for create-marketplace
+      --name string        set a marketplace name
+      --percentage float   set a referral percentage
+      --referral string    set a referral address
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Sell
+sell transaction
+
+operator kapps sell [flags]
+
+Copy
+Copied!
+Options
+      --currency string   set a sell currency
+      --endTime int       set a sell end time
+  -h, --help              help for sell
+      --kda string        set a KDA ID
+      --market string     set a sell market ID
+      --price float       set a sell price
+      --reserve float     set a sell reserve price
+      --type int32        set a market type
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Set Ito Prices
+set ITO prices transaction
+
+operator kapps set-ito-prices [flags]
+
+Copy
+Copied!
+Options
+  -h, --help                help for set-ito-prices
+      --kda string          set a KDA ID
+      --packs stringArray   --packs='{"kda":"KLV", "packs": [{"amount": 1000, "price": 2},{"amount":2000, "price": 1}]}'
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps Trigger Ito
+trigger an ITO
+
+operator kapps trigger-ito [TRIGGER_TYPE] [flags]
+
+Copy
+Copied!
+Options
+      --endTime int                set ITO end time
+  -h, --help                       help for trigger-ito
+      --kda string                 set a KDA ID
+      --limitPerAddress int        set limit per address
+      --maxAmount float            set an ITO max amount
+      --packs stringArray          --packs='{"kda":"KLV", "packs": [{"amount": 1000, "price": 2},{"amount":2000, "price": 1}]}'
+      --receiver string            set an ITO receiver address
+      --startTime int              set ITO start time
+      --status int32               set ITO status
+      --whitelist stringToString   --whitelist 'klv...=1,klv...=2, klv...=3' (default [])
+      --whitelistEndTime int       set ITO whitelist end time
+      --whitelistStartTime int     set ITO whitelist start time
+      --whitelistStatus int32      set ITO whitelist status
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kapps - kapps actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kapps
+kapps actions
+
+operator kapps [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for kapps
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+operator kapps buy - buy transaction
+operator kapps cancel-market - cancel-market transaction
+operator kapps config-ito - config an ITO transaction
+operator kapps config-marketplace - config marketplace transaction
+operator kapps create-marketplace - create marketplace transaction
+operator kapps sell - sell transaction
+operator kapps set-ito-prices - set ITO prices transaction
+operator kapps trigger-ito - trigger an ITO
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kda Create
+create a new KDA
+
+operator kda create [KDA_TYPE] [flags]
+
+Copy
+Copied!
+Options
+      --addRolesMint strings                      KDA addRolesMint
+      --addRolesSetITOPrices strings              KDA addRolesSetITOPrices
+      --apr float                                 KDA apr
+      --canAddRoles                               KDA canAddRoles
+      --canBurn                                   KDA canBurn
+      --canChangeOwner                            KDA canChangeOwner
+      --canFreeze                                 KDA canFreeze
+      --canMint                                   KDA canMint
+      --canPause                                  KDA canPause
+      --canWipe                                   KDA canWipe
+  -h, --help                                      help for create
+      --initialSupply float                       KDA initialSupply
+      --interestType uint32                       KDA interest type
+      --isNFTMintStopped                          KDA isNFTMintStopped
+      --isPaused                                  KDA isPaused
+      --isRoyaltiesChangeStopped                  KDA isRoyaltiesChangeStopped
+      --logo string                               KDA logo
+      --maxSupply float                           KDA maxSupply
+      --minEpochsToClaim uint32                   KDA minEpochsToClaim
+      --minEpochsToUnstake uint32                 KDA minEpochsToUnstake
+      --minEpochsToWithdraw uint32                KDA minEpochsToWithdraw
+      --name string                               KDA name
+      --ownerAddress string                       KDA ownerAddress
+      --precision uint32                          KDA precision
+      --royaltiesAddress string                   KDA royaltiesAddress
+      --royaltiesITOFixed float                   KDA royaltiesITOFixed
+      --royaltiesITOPercentage float              KDA royaltiesITOPercentage
+      --royaltiesMarketFixed float                KDA royaltiesMarketFixed
+      --royaltiesMarketPercentage float           KDA royaltiesMarketPercentage
+      --royaltiesTransferFixed float              KDA royaltiesTransferFixed
+      --royaltiesTransferPercentage stringArray   --royaltiesTransferPercentage='{"amount": 100, "percentage": 50}'
+      --splitRoyalties stringArray                --splitRoyalties='{"address":"klv...", "percentTransferPercentage": 1, "percentTransferFixed": 1, "percentMarketPercentage": 1, "percentMarketFixed": 1}, "percentITOPercentage": 1, "percentITOFixed": 1}'
+      --ticker string                             KDA ticker
+      --uris stringToString                       KDA uris (default [])
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kda - kda actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kda Deposit
+Trigger a deposit request on KDA
+
+operator kda deposit [amount] [flags]
+
+Copy
+Copied!
+Options
+      --currencyID string   Currency to share
+      --depositType int32   Deposit type
+  -h, --help                help for deposit
+      --kdaID string        Deposit to KDA ID
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kda - kda actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kda Trigger
+trigger a KDA
+
+operator kda trigger [TRIGGER_TYPE] [flags]
+
+Copy
+Copied!
+Options
+      --addRolesMint strings                      Trigger addRolesMint
+      --addRolesSetITOPrices strings              Trigger addRolesSetITOPrices
+      --amount float                              Trigger amount
+  -h, --help                                      help for trigger
+      --kdaID string                              Trigger KDA ID
+      --logo string                               Trigger logo
+      --mime string                               Trigger mime
+      --nftID string                              Trigger NFT ID
+      --receiver string                           Trigger receiver
+      --royaltiesAddress string                   KDA royaltiesAddress
+      --royaltiesITOFixed float                   KDA royaltiesITOFixed
+      --royaltiesITOPercentage float              KDA royaltiesITOPercentage
+      --royaltiesMarketFixed float                KDA royaltiesMarketFixed
+      --royaltiesMarketPercentage float           KDA royaltiesMarketPercentage
+      --royaltiesTransferFixed float              KDA royaltiesTransferFixed
+      --royaltiesTransferPercentage stringArray   --royaltiesTransferPercentage='{"amount": 100, "percentage": 50}'
+      --splitRoyalties stringArray                --splitRoyalties='{"address":"klv...", "percentTransferPercentage": 1, "percentTransferFixed": 1, "percentMarketPercentage": 1, "percentMarketFixed": 1}, "percentITOPercentage": 1, "percentITOFixed": 1}'
+      --updateKdaPool stringToString              --updateKdaPool 'active=false,adminAddress=klv-address,fixedRatioKLV=1,fixedRatioKDA=100 (default [])
+      --updateStaking stringToString              --updateStaking 'apr=10, claim=1, unstake=5, withdraw=7' (claim/unstake/withdraw are the min epochs to make the respective actions) (default [])
+      --uris stringToString                       Trigger uris (default [])
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kda - kda actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kda Withdraw
+Trigger a withdraw request on KDA Pool
+
+operator kda withdraw [amount] [flags]
+
+Copy
+Copied!
+Options
+      --currencyID string   Currency to share
+  -h, --help                help for withdraw
+      --kdaID string        Deposit to KDA ID
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator kda - kda actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Kda
+kda actions
+
+operator kda [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for kda
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+operator kda create - create a new KDA
+operator kda deposit - Trigger a deposit request on KDA
+operator kda trigger - trigger a KDA
+operator kda withdraw - Trigger a withdraw request on KDA Pool
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Sign
+sign a transaction
+
+operator sign [Transaction] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for sign
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Tx By Id
+get transaction by id
+
+operator tx-by-id [HASH] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for tx-by-id
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Validator Config
+config a validator
+
+operator validator config [OWNER_ADDRESS] [flags]
+
+Copy
+Copied!
+Options
+      --bls string            set node BLS PublicKey
+      --canDelegate           set if validator can delegate (default true)
+      --commission float      set validator commission (default 10)
+  -h, --help                  help for config
+      --logo string           configure validator logo URI
+      --maxDelegation float   set validator max delegation (default 1e+08)
+      --name string           set validator name
+      --rewards string        set validator rewards address (default "OWNER")
+      --uris stringToString   validator uris (default [])
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator validator - validator actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Validator Create
+create a validator
+
+operator validator create [OWNER_ADDRESS] [flags]
+
+Copy
+Copied!
+Options
+      --bls string            set node BLS PublicKey
+      --canDelegate           set if validator can delegate (default true)
+      --commission float      set validator commission (default 10)
+  -h, --help                  help for create
+      --logo string           configure validator logo URI
+      --maxDelegation float   set validator max delegation (default 1e+08)
+      --name string           set validator name
+      --rewards string        set validator rewards address (default "OWNER")
+      --uris stringToString   validator uris (default [])
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator validator - validator actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Validator Unjail
+unjail validator
+
+operator validator unjail [OWNER_ADDRESS] [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for unjail
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator validator - validator actions
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Validator
+validator actions
+
+operator validator [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for validator
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+operator validator config - config a validator
+operator validator create - create a validator
+operator validator unjail - unjail validator
+Auto generated by spf13/cobra on 6-Mar-2023
+
+Operator Version
+Show version
+
+operator version [flags]
+
+Copy
+Copied!
+Options
+  -h, --help   help for version
+
+Copy
+Copied!
+Options inherited from parent commands
+  -c, --create-only               only create transaction to be signed later
+      --fromAddress string        overwrite fromAddress
+      --kdaFee string             use KDA to pay for fees
+  -k, --key-file string           set walelt pem file --key-file=./walletKey.pem (default "./walletKey.pem")
+      --message stringArray       set TX message --message="MyMessage"
+  -m, --multi-files stringArray   add more files to sign tx. Ex: -m=./file.pem -m=./file2.pem
+  -n, --node string               entrypoint to node API --node=http://node.testnet.klever.org (default "http://localhost:8080")
+      --nonce uint                set TX nonce --nonce=33
+  -p, --password string[="*"]     --password=MY_SECRET
+      --password-file string      path to a file containing the password
+      --permID int32              set TX permission ID --permID=0
+
+Copy
+Copied!
+SEE ALSO
+operator - Klever Operator
+Auto generated by spf13/cobra on 6-Mar-2023

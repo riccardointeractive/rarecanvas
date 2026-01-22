@@ -1,0 +1,103 @@
+name: Telegram Update Notification
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/app/updates/config/updates.config.ts'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if first update entry changed
+        id: detect
+        run: |
+          # Get the first update block from current and previous commit
+          git show HEAD:src/app/updates/config/updates.config.ts > current.ts 2>/dev/null || echo "" > current.ts
+          git show HEAD^:src/app/updates/config/updates.config.ts > previous.ts 2>/dev/null || echo "" > previous.ts
+          
+          # Extract first version from each
+          CURRENT_VERSION=$(grep -m1 "version:" current.ts | sed "s/.*version:[[:space:]]*['\"]\\([^'\"]*\\)['\"].*/\\1/")
+          PREVIOUS_VERSION=$(grep -m1 "version:" previous.ts | sed "s/.*version:[[:space:]]*['\"]\\([^'\"]*\\)['\"].*/\\1/")
+          
+          echo "Current version: $CURRENT_VERSION"
+          echo "Previous version: $PREVIOUS_VERSION"
+          
+          if [ "$CURRENT_VERSION" = "$PREVIOUS_VERSION" ]; then
+            echo "No new version detected"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "New version detected: $CURRENT_VERSION"
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Parse and send notification
+        if: steps.detect.outputs.skip == 'false'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+          VERSION: ${{ steps.detect.outputs.version }}
+        run: |
+          CONFIG_FILE="src/app/updates/config/updates.config.ts"
+          
+          # Extract the first update block (everything between first { and first },)
+          FIRST_BLOCK=$(awk '/const updates.*\[/,/^  \},/' "$CONFIG_FILE" | tail -n +2)
+          
+          # Extract fields from the block
+          VERSION=$(echo "$FIRST_BLOCK" | grep "version:" | head -1 | sed "s/.*version:[[:space:]]*['\"]\\([^'\"]*\\)['\"].*/\\1/")
+          TITLE=$(echo "$FIRST_BLOCK" | grep "title:" | head -1 | sed "s/.*title:[[:space:]]*['\"]\\([^'\"]*\\)['\"].*/\\1/" | \
+            sed 's/&/\&amp;/g' | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g')
+          TYPE=$(echo "$FIRST_BLOCK" | grep "type:" | head -1 | sed "s/.*type:[[:space:]]*['\"]\\([^'\"]*\\)['\"].*/\\1/")
+          
+          # Extract changes array (first 6 items)
+          CHANGES=$(echo "$FIRST_BLOCK" | awk '/changes:[[:space:]]*\[/,/\]/' | \
+            grep "'" | head -6 | \
+            sed "s/.*'\\([^']*\\)'.*/• \\1/" | \
+            sed 's/&/\&amp;/g' | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g')
+          
+          # Emoji based on type
+          case "$TYPE" in
+            "release") EMOJI="🚀" ;;
+            "feature") EMOJI="✨" ;;
+            "fix") EMOJI="🐛" ;;
+            "improvement") EMOJI="💎" ;;
+            *) EMOJI="📦" ;;
+          esac
+          
+          # Build message
+          NEWLINE=$'\n'
+          MESSAGE="${EMOJI} <b>Digiko v${VERSION}</b>${NEWLINE}${NEWLINE}${TITLE}${NEWLINE}${NEWLINE}${CHANGES}${NEWLINE}${NEWLINE}👉 <a href=\"https://digiko.io/updates\">View all updates</a>"
+          
+          # Debug output
+          echo "Version: $VERSION"
+          echo "Title: $TITLE"
+          echo "Type: $TYPE"
+          echo "Changes:"
+          echo "$CHANGES"
+          
+          # Send to Telegram
+          RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "message_thread_id=${TELEGRAM_THREAD_ID}" \
+            --data-urlencode "parse_mode=HTML" \
+            --data-urlencode "text=${MESSAGE}" \
+            --data-urlencode "disable_web_page_preview=true")
+          
+          echo "Response: $RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q '"ok":true'; then
+            echo "✅ Sent v${VERSION} notification successfully!"
+          else
+            echo "❌ Failed to send notification"
+            exit 1
+          fi

@@ -1,0 +1,289 @@
+API & SDK
+Useful links and info for devs that want to integrate the Klever Blockchain to their projects
+
+Web SDK
+If you want to create a web app that communicates with the Klever Blockchain via the Klever web extension or via the Klever mobile app's built-in browser, you can find more info on our javascript library in this link:
+
+Klever Blockchain API
+If you need more info on the Klever Blockchain APIs to interact directly with the blockchain, you can access the swagger documentation for the API endpoints through the following URLs:
+
+Proxy API endpoints
+Proxy API endpoints Swagger UI
+
+Node API endpoints
+Node API endpoints Swagger UI
+
+Multi-Signature API
+Create and handle transactions with multiple signatures accounts: MultiSig API Reference
+
+WebSocket
+Receive blocks, addresses and transactions from WebSocket: Websocket Reference
+
+Checking the status of the transaction
+When you broadcast a transaction, you will receive it's unique hash.
+
+Take the hash 7b066e58b650d4ea6ba61de087350ddf909cfee660cc9537c0167b38df6d4882 for example.
+
+You can either see the transaction details using the Klever Explorer or by calling one of the api endpoint's.
+
+Using the proxy api call, you will receive the parsed transaction as response.
+
+Using the node api call, you will receive the transaction as it is in the blockchain.
+
+Using the explorer or the proxy api, you can check the status code of the transaction, if it matches the expected format it will be "success".
+
+If, for some reason, your transaction was broadcast but doesn't appear in the proxy api or in the explorer, you can check its status in the node api. It will help you identify if the node that you used to broadcast the transaction is faulty.
+
+Sending a transaction to the Klever Blockchain
+If you plan on using the raw endpoints, you'll need to do three main steps: building, signing and broadcasting the transaction.
+
+1. Build
+To build the transaction, if you are creating a web application, you can use the window method injected by the Klever extension (or the Klever 5 mobile browser).
+
+const unsignedTransaction = await window.kleverWeb.buildTransaction([
+  {
+    payload,
+    type: TransactionType.Transfer,
+  },
+])
+
+Copy
+Copied!
+Even though you can use the window kleverWeb object directly, we suggest you use the Klever Blockchain JS SDK, if you are using javascript.
+
+Alternatively you can send the params through the send endpoint, and will receive an unsigned transaction as response.
+
+2. Sign
+To sign the transaction, if you are creating a web application, again, you can use the window method injected by the Klever extension (or the Klever 5 mobile browser).
+
+const signedTransaction =
+  await window.kleverWeb.signTransaction(unsignedTransaction)
+
+Copy
+Copied!
+Alternatively, to sign the transaction, you will need to do it using a backend application, so you don't expose your private key. For instance, you can use the GO SDK or the Klever Blockchain JS SDK with NodeJS.
+
+3. Broadcast
+To broadcast the transaction, if you are creating a web application, again, you can use the window method.
+
+const broadcastResponse = await window.kleverWeb.broadcastTransactions([
+  signedTransaction,
+])
+
+Copy
+Copied!
+Alternatively you can send a signed transaction through the broadcast endpoint to be processed and validated by the blockchain.
+
+Checking the status of the transaction
+When you broadcast a transaction, you will receive it's unique hash.
+
+Take the hash 7b066e58b650d4ea6ba61de087350ddf909cfee660cc9537c0167b38df6d4882 for example.
+
+You can either see the transaction details using the Klever Explorer or by calling one of the api endpoint's.
+
+Using the proxy api call, you will receive the parsed transaction as response.
+
+Using the node api call, you will receive the transaction as it is in the blockchain.
+
+Using the explorer or the proxy api, you can check the status code of the transaction, if it matches the expected format it will be "success".
+
+If, for some reason, your transaction was broadcast but doesn't appear in the proxy api or in the explorer, you can check its status in the node api. It will help you identify if the node that you used to broadcast the transaction is faulty.
+
+Multisig API reference
+1. Create a transaction
+You will need to create a transaction with a valid permissionID.
+Your transaction will be stored with the permission addresses and weights.
+2. Add signatures
+With your transaction saved on our database, you will be able to add the remaining signatures of the missing addresses
+You can list the transactions, and signers by hash or address.
+3. Broadcast
+After all missing signatures, you can broadcast the transaction to the network
+But you only can do that if the weight of the permission is valid
+API Reference
+Create a new transaction or add a signature
+POST
+https://multisign.mainnet.klever.org/transaction
+Body example
+
+{
+  "hash": "bd51a21cb8c364f5b1cc20e44684fe1163bc0767a7051dcd34095d77d010bf5e",
+  "address": "klv1kvl993g53ktvyg5675etu3c5hzyd7hxu75y8kathev6wazpe2tgqxu7xhv",
+  "signers": [
+    {
+      "address": "klv1kvl993g53ktvyg5675etu3c5hzyd7hxu75y8kathev6wazpe2tgqxu7xhv",
+      "weight": 1,
+      "signed": true
+    },
+    {
+      "address": "klv1nk2v6udpmv6v8hhp9eyp99v68zrgzd95c2u6zt799qm7de4vfnjqnngs8x",
+      "weight": 1,
+      "signed": true
+    }
+  ],
+  "Threshold": 2,
+  "raw": {
+    "RawData": {
+      "Nonce": 4,
+      "Sender": "sz5SxRSNlsIimvUyvkcUuIjfXNz1CHt1d8s07og5UtA=",
+      "Contract": [
+        {
+          "Parameter": {
+            "type_url": "type.googleapis.com/proto.TransferContract",
+            "value": "CiBSrsW33uMB+HZ7BFuEhcvcr79J5B5IhKVPhgmHPaaLQxIDS0xWGICt4gQ="
+          }
+        }
+      ],
+      "KAppFee": 500000,
+      "BandwidthFee": 1000000,
+      "Version": 1,
+      "ChainID": "MTAwNDIw"
+    },
+    "Signature": [
+      "MjztYUmxAYJr6BQRLvlYj5NPkQKhbViXVgqJ31cBnfKV76B69ZZQ61lyMnGGS7Be1UJgm0BvI1wKdSHVT8roDw==",
+      "i9AIua688ler+Cgs8E6uZALZds3Dtp4UZOO0nTxzSQH2XG0z/fXVHO4e+0N4LJyv/1j3utKAetmTekUSVX1/DQ=="
+    ],
+    "hash": "YmQ1MWEyMWNiOGMzNjRmNWIxY2MyMGU0NDY4NGZlMTE2M2JjMDc2N2E3MDUxZGNkMzQwOTVkNzdkMDEwYmY1ZQ=="
+  }
+}
+
+Copy
+Copied!
+Broadcast the transaction if the threshold was reached
+POST
+https://multisign.mainnet.klever.org/broadcast/{hash}
+List a transaction by hash
+GET
+https://multisign.mainnet.klever.org/transaction/{hash}
+List all transactions for an address
+GET
+https://multisign.mainnet.klever.org/transaction/by-address/{address}
+Websocket Reference
+Here you will find a guide on establishing a connection to the Blockchain WebSocket client. This guide will walk you through the step-by-step process of connecting and receiving messages.
+
+Important: You need to set up and run your own Klever node with the indexer option enabled to use WebSocket subscriptions.
+
+For detailed instructions on setting up your indexer, see: How to Set Up Your Own Indexer
+
+How to receive messages:
+To connect to the Blockchain WebSocket client, follow these steps.
+
+Connect to the WebSocket URL.
+Establish a connection to it using a WebSocket library or framework of your choice.
+After successfully connecting, it's important to send an initial message to subscribe to the desired topics or a specific address or hash. This message should contain the necessary information for the server to understand your subscription preferences.
+Once subscribed, you will start receiving messages related to the subscribed topics or a specific address or hash.
+package main
+
+import (
+	"encoding/json"
+	"log"
+	"net/url"
+
+	"github.com/gorilla/websocket"
+)
+
+type EventType string
+
+const (
+	ACCOUNTS    EventType = "accounts"    // receive all accounts changed or created
+	BLOCKS      EventType = "blocks"      // receive all blocks
+	TRANSACTION EventType = "transaction" // receive all transactions
+)
+
+type Data struct {
+	Types     []EventType `json:"subcribed_types"`
+	Addresses []string    `json:"addresses"`
+}
+
+type Event struct {
+	Type    EventType `json:"type"`
+	Address string    `json:"address"`
+	Hash    string    `json:"hash"`
+	Data    []byte    `json:"data"`
+}
+
+func main() {
+	// your indexer node
+	u := url.URL{Scheme: "ws", Host: "127.0.0.1:8080", Path: "/subscribe"}
+	log.Printf("connecting to %s", u.String())
+
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	defer c.Close()
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+
+			// marshal the message to Event struct
+			var event Event
+			if err := json.Unmarshal(message, &event); err != nil {
+				log.Println("unmarshal:", err)
+				return
+			}
+
+			switch event.Type {
+			case BLOCKS:
+				log.Println("Received BLOCKS data:", string(event.Data))
+			case ACCOUNTS:
+				log.Println("Received ACCOUNTS data:", string(event.Data))
+			case TRANSACTION:
+				log.Println("Received TRANSACTION data:", string(event.Data))
+			default:
+				log.Println("Unknown data ", string(message))
+			}
+
+		}
+	}()
+
+	subMessage := Data{
+		Types: []EventType{BLOCKS, TRANSACTION, ACCOUNTS},
+	}
+
+	// send the first message to subscribe
+	if err := c.WriteJSON(subMessage); err != nil {
+		log.Println("err: ", err)
+		done <- struct{}{}
+	}
+
+	<-done
+}
+
+
+Copy
+Copied!
+import useWebSocket from 'react-use-websocket'
+
+export enum WSTopics {
+  accounts = 'accounts', // receive all accounts changed or created
+  blocks = 'blocks', // receive all blocks
+  transaction = 'transaction', // receive all transactions
+}
+
+const socketUrl = "ws://127.0.0.1:8080" // your indexer node
+
+const { sendJsonMessage, lastJsonMessage } = useWebSocket(socketUrl, {
+    onOpen: () => {
+      const payload = {
+        addresses: ["klv1...."], // OPTIONAL field to listen a specific address
+        subcribed_types: [WSTopics.blocks],
+      }
+      sendJsonMessage(payload)
+    }
+})
+
+Copy
+Copied!
+Topics
+Topic	Value
+BLOCKS	blocks
+TRANSACTIONS	transactions
+ACCOUNTS	accounts

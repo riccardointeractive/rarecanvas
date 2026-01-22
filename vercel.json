@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/update-prices",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/games/planets/auto-resolve",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/telegram/dex-notify",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/ai-collector",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

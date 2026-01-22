@@ -1,0 +1,4035 @@
+{
+    "schemes": ["https","http"],
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample of the KleverChain Node Server.",
+        "title": "KleverChain Node",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "node.testnet.klever.org/",
+    "basePath": "",
+    "paths": {
+        "/address/{address}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Address"
+                ],
+                "summary": "returns an accountResponse",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "account": {
+                                                    "$ref": "#/definitions/data.AccountInfo"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/address/{address}/allowance": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Address"
+                ],
+                "summary": "returns the rewards available for a specific asset in an account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "asset",
+                        "name": "asset",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.AvailableClaimResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/address/{address}/allowance/list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Address"
+                ],
+                "summary": "returns the rewards available for a specific list of asset in an account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "assets (comma-separated asset IDs), e.g. KLV,KFI",
+                        "name": "asset",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.AvailableClaimListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/address/{address}/balance": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Address"
+                ],
+                "summary": "returns the balance for the address parameter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "KLV",
+                        "description": "asset",
+                        "name": "asset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.BalanceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/address/{address}/kda": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Address"
+                ],
+                "summary": "returns the user kda for the address parameter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "KLV",
+                        "description": "asset",
+                        "name": "asset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.KDAResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/address/{address}/nonce": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Address"
+                ],
+                "summary": "returns the nonce and pending transaction info for a specific account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.AccountNonceResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/asset/nft/{owner}/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Asset"
+                ],
+                "summary": "returns an assetResponse containing information about the asset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "asset owner",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "asset id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "asset": {
+                                                    "$ref": "#/definitions/asset.NFTAsset"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/asset/pool/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Asset"
+                ],
+                "summary": "returns an poolResponse containing information about the asset pool",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "asset id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pool": {
+                                                    "$ref": "#/definitions/kdafeespool.KDAFeesPoolData"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/asset/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Asset"
+                ],
+                "summary": "returns an assetResponse containing information about the asset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "asset id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "asset": {
+                                                    "$ref": "#/definitions/kapps.KDAData"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/block/by-hash/{hash}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Block"
+                ],
+                "summary": "returns the block info by hash",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "block hash",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "block": {
+                                                    "$ref": "#/definitions/api.Block"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/block/by-nonce/{nonce}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Block"
+                ],
+                "summary": "returns the block info by nonce",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "block nonce",
+                        "name": "nonce",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "block": {
+                                                    "$ref": "#/definitions/api.Block"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marketplace"
+                ],
+                "summary": "returns an marketplaceResponse containing information about the marketplace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "marketplace Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "marketplace": {
+                                                    "$ref": "#/definitions/api.Marketplace"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/network/config": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Network"
+                ],
+                "summary": "returns metrics related to the network configuration",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "config": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/network/network-parameters": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Network"
+                ],
+                "summary": "returns the active parameters of the proposal controller",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "parameters": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/network/status": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Network"
+                ],
+                "summary": "returns metrics related to the network status (shard specific)",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/node/debug": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "returns the debug information after the query has been interpreted",
+                "parameters": [
+                    {
+                        "description": "body data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/node.QueryDebugRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/node/enable-epochs": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "get node enable epochs configuration",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "config": {
+                                                    "$ref": "#/definitions/config.EnableEpochsConfig"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/node/heartbeatstatus": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "respond with the heartbeat status of the node",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "heartbeats": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/definitions/data.PubKeyHeartbeat"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/node/metrics": {
+            "get": {
+                "tags": [
+                    "Node"
+                ],
+                "summary": "return the data in the way that prometheus expects them",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/node/overview": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "returns a node overview",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/node.NodeOverviewResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/node/p2pstatus": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "returns the node's p2p statistics exported by a StatusMetricsHandler",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "metrics": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/node/peerinfo": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "returns the information of a provided p2p peer ID",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "info": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/definitions/core.QueryP2PPeerInfo"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/node/set-redundancy": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "set node redundancy level",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/node/statistics": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "returns the blockchain statistics",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statistics": {
+                                                    "$ref": "#/definitions/node.statisticsResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/node/status": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "returns the node statistics exported by an StatusMetricsHandler without p2p statistics",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "metrics": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/broadcast": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "broadcast the TX",
+                "parameters": [
+                    {
+                        "description": "body data",
+                        "name": "BroadcastTXRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transaction.BroadcastTXRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.BroadcastTXResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/decode": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "decode a given transaction",
+                "parameters": [
+                    {
+                        "description": "body data",
+                        "name": "transaction",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transaction.Transaction"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "tx": {
+                                                    "$ref": "#/definitions/data.Transaction"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/estimate-fee": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "returns fee details for a given transaction",
+                "parameters": [
+                    {
+                        "description": "body data",
+                        "name": "transaction",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transaction.Transaction"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/transaction.FeesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "some internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/pool": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "returns transaction memory pool",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "sender (optional)",
+                        "name": "sender",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.TransactionPoolResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "some internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/send": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "returns send transaction",
+                "parameters": [
+                    {
+                        "description": "body data",
+                        "name": "sendTXRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transaction.sendTXRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.SendTXResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/simulate": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "simulate transaction gas consumption",
+                "parameters": [
+                    {
+                        "description": "body data",
+                        "name": "sendTXRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transaction.sendTXRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.SimulateTransactionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/{txhash}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "returns transaction details for a given txhash",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "txhash",
+                        "name": "txhash",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "include execution results (default false)",
+                        "name": "withResults",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "transaction": {
+                                                    "$ref": "#/definitions/api.Transaction"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "some internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/validator/peers": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Validator"
+                ],
+                "summary": "will return the peers",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "peers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/definitions/state.PeerAccountData"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/validator/statistics": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Validator"
+                ],
+                "summary": "will return the validation statistics for all validators",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "statistics": {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "$ref": "#/definitions/state.ValidatorApiResponse"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "some error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/hex": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "returns the data as bytes, hex-encoded",
+                "parameters": [
+                    {
+                        "description": "vm request data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/vm.VMValueRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/int": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "returns the data as big int",
+                "parameters": [
+                    {
+                        "description": "vm request data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/vm.VMValueRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/query": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "returns the VM output of a smart contract query",
+                "parameters": [
+                    {
+                        "description": "vm request data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/vm.VMValueRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "$ref": "#/definitions/vm.VMOutputApi"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/string": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VM"
+                ],
+                "summary": "returns the data as string",
+                "parameters": [
+                    {
+                        "description": "vm request data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/vm.VMValueRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/shared.GenericAPIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/shared.GenericAPIResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "anypb.Any": {
+            "type": "object",
+            "properties": {
+                "type_url": {
+                    "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n  - If no scheme is provided, `https` is assumed.\n  - An HTTP GET on the URL must yield a [google.protobuf.Type][]\n    value in binary format, or produce an error.\n  - Applications are allowed to cache lookup results based on the\n    URL, or have them precompiled into a binary to avoid any\n    lookup. Therefore, binary compatibility needs to be preserved\n    on changes to types. (Use versioned type names to manage\n    breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics.",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "api.Block": {
+            "type": "object",
+            "properties": {
+                "Header": {
+                    "$ref": "#/definitions/block.BlockHeader"
+                },
+                "ProducerSignature": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "PubKeysBitmap": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Signature": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "TxHashes": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.Transaction"
+                    }
+                }
+            }
+        },
+        "api.Events": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "api.Logs": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "contractId": {
+                    "type": "integer"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.Events"
+                    }
+                }
+            }
+        },
+        "api.Marketplace": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownerAddress": {
+                    "type": "string"
+                },
+                "referralAddress": {
+                    "type": "string"
+                },
+                "referralPercentage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api.Transaction": {
+            "type": "object",
+            "properties": {
+                "Block": {
+                    "type": "integer"
+                },
+                "GasLimit": {
+                    "type": "integer"
+                },
+                "GasMultiplier": {
+                    "type": "integer"
+                },
+                "RawData": {
+                    "$ref": "#/definitions/transaction.Transaction_Raw"
+                },
+                "Receipts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transaction.Transaction_Receipt"
+                    }
+                },
+                "Result": {
+                    "$ref": "#/definitions/transaction.Transaction_TXResult"
+                },
+                "ResultCode": {
+                    "$ref": "#/definitions/transaction.Transaction_TXResultCode"
+                },
+                "Signature": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "logs": {
+                    "$ref": "#/definitions/api.Logs"
+                },
+                "signature": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "asset.NFTAsset": {
+            "type": "object",
+            "properties": {
+                "AdminAddress": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "AssetType": {
+                    "$ref": "#/definitions/kapps.KDAData_EnumAssetType"
+                },
+                "Attributes": {
+                    "$ref": "#/definitions/kapps.AttributesData"
+                },
+                "BurnedValue": {
+                    "type": "integer"
+                },
+                "CirculatingSupply": {
+                    "type": "integer"
+                },
+                "ID": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "InitialSupply": {
+                    "type": "integer"
+                },
+                "IssueDate": {
+                    "type": "integer"
+                },
+                "Logo": {
+                    "type": "string"
+                },
+                "MaxSupply": {
+                    "type": "integer"
+                },
+                "MintedValue": {
+                    "type": "integer"
+                },
+                "Name": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "OwnerAddress": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Precision": {
+                    "type": "integer"
+                },
+                "Properties": {
+                    "$ref": "#/definitions/kapps.PropertiesData"
+                },
+                "Roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/kapps.RolesData"
+                    }
+                },
+                "Royalties": {
+                    "$ref": "#/definitions/kapps.RoyaltiesData"
+                },
+                "Ticker": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "URIs": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "userKDA": {
+                    "$ref": "#/definitions/kapps.UserKDA"
+                }
+            }
+        },
+        "big.Int": {
+            "type": "object"
+        },
+        "block.BlockHeader": {
+            "type": "object",
+            "properties": {
+                "BlockRewards": {
+                    "type": "integer"
+                },
+                "BurnedUnclaimed": {
+                    "type": "integer"
+                },
+                "ChainID": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Epoch": {
+                    "type": "integer"
+                },
+                "IsEpochStart": {
+                    "type": "boolean"
+                },
+                "KAppFees": {
+                    "type": "integer"
+                },
+                "KAppsTrieRoot": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Nonce": {
+                    "type": "integer"
+                },
+                "ParentHash": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "PrevEpochStartSlot": {
+                    "type": "integer"
+                },
+                "PrevRandSeed": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "RandSeed": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Reserved": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Slot": {
+                    "type": "integer"
+                },
+                "SoftwareVersion": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "StakingRewards": {
+                    "type": "integer"
+                },
+                "Timestamp": {
+                    "type": "integer"
+                },
+                "TrieRoot": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "TxBurnedFees": {
+                    "type": "integer"
+                },
+                "TxCount": {
+                    "type": "integer"
+                },
+                "TxFees": {
+                    "type": "integer"
+                },
+                "TxRootHash": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "ValidatorsTrieRoot": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "config.EnableEpochs": {
+            "type": "object",
+            "properties": {
+                "bigBucketsCompute": {
+                    "type": "integer"
+                },
+                "claimKFI": {
+                    "type": "integer"
+                },
+                "fixAuditChanges": {
+                    "type": "integer"
+                },
+                "fixDelegationSameEpoch": {
+                    "type": "integer"
+                },
+                "fixStakingBuckets": {
+                    "type": "integer"
+                },
+                "fprcomputeAndKdaFeeFlow": {
+                    "type": "integer"
+                },
+                "kdaFpr": {
+                    "type": "integer"
+                },
+                "processorFlowITOPrice": {
+                    "type": "integer"
+                },
+                "smartContracts": {
+                    "type": "integer"
+                }
+            }
+        },
+        "config.EnableEpochsConfig": {
+            "type": "object",
+            "properties": {
+                "enableEpochs": {
+                    "$ref": "#/definitions/config.EnableEpochs"
+                },
+                "gasSchedule": {
+                    "$ref": "#/definitions/config.GasScheduleConfig"
+                },
+                "maxNodesChangeEnableEpoch": {
+                    "description": "Shuffler",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/config.MaxNodesChangeConfig"
+                    }
+                }
+            }
+        },
+        "config.GasScheduleByEpochs": {
+            "type": "object",
+            "properties": {
+                "fileName": {
+                    "type": "string"
+                },
+                "startEpoch": {
+                    "type": "integer"
+                }
+            }
+        },
+        "config.GasScheduleConfig": {
+            "type": "object",
+            "properties": {
+                "gasScheduleByEpochs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/config.GasScheduleByEpochs"
+                    }
+                }
+            }
+        },
+        "config.MaxNodesChangeConfig": {
+            "type": "object",
+            "properties": {
+                "epochEnable": {
+                    "type": "integer"
+                },
+                "nodesToShuffle": {
+                    "type": "integer"
+                }
+            }
+        },
+        "core.QueryP2PPeerInfo": {
+            "type": "object",
+            "properties": {
+                "addresses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "isblacklisted": {
+                    "type": "boolean"
+                },
+                "peertype": {
+                    "type": "string"
+                },
+                "pid": {
+                    "type": "string"
+                },
+                "pk": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.AccountInfo": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "allowance": {
+                    "type": "integer"
+                },
+                "balance": {
+                    "type": "integer"
+                },
+                "codeHash": {
+                    "type": "string"
+                },
+                "codeMetadata": {
+                    "type": "string"
+                },
+                "foundation": {
+                    "type": "boolean"
+                },
+                "frozenBalance": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "nonce": {
+                    "type": "integer"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.Permissions"
+                    }
+                },
+                "rootHash": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "unfrozenBalance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "data.Event": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "data.KDAFee": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "kda": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.Logs": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "contractId": {
+                    "type": "integer"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.Event"
+                    }
+                },
+                "timestamp": {
+                    "$ref": "#/definitions/time.Duration"
+                }
+            }
+        },
+        "data.PermissionKey": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
+                }
+            }
+        },
+        "data.Permissions": {
+            "type": "object",
+            "properties": {
+                "Threshold": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "operations": {
+                    "type": "string"
+                },
+                "permissionName": {
+                    "type": "string"
+                },
+                "signers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.PermissionKey"
+                    }
+                },
+                "type": {
+                    "type": "integer"
+                }
+            }
+        },
+        "data.PubKeyHeartbeat": {
+            "type": "object",
+            "properties": {
+                "identity": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "maxInactiveTime": {
+                    "type": "string"
+                },
+                "nodeDisplayName": {
+                    "type": "string"
+                },
+                "nonce": {
+                    "type": "integer"
+                },
+                "numInstances": {
+                    "type": "integer"
+                },
+                "peerType": {
+                    "type": "string"
+                },
+                "publicKey": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "totalDownTimeSec": {
+                    "type": "integer"
+                },
+                "totalUpTimeSec": {
+                    "type": "integer"
+                },
+                "versionNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.TXContract": {
+            "type": "object",
+            "properties": {
+                "parameter": {},
+                "type": {
+                    "$ref": "#/definitions/transaction.TXContract_ContractType"
+                },
+                "typeString": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.Transaction": {
+            "type": "object",
+            "properties": {
+                "bandwidthFee": {
+                    "type": "integer"
+                },
+                "blockNum": {
+                    "type": "integer"
+                },
+                "chainID": {
+                    "type": "string"
+                },
+                "contract": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.TXContract"
+                    }
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hasLogs": {
+                    "type": "boolean"
+                },
+                "hasOperations": {
+                    "type": "boolean"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "kAppFee": {
+                    "type": "integer"
+                },
+                "kdaFee": {
+                    "$ref": "#/definitions/data.KDAFee"
+                },
+                "logs": {
+                    "$ref": "#/definitions/data.Logs"
+                },
+                "nonce": {
+                    "type": "integer"
+                },
+                "permissionID": {
+                    "type": "integer"
+                },
+                "receipts": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "resultCode": {
+                    "type": "string"
+                },
+                "searchOrder": {
+                    "type": "integer"
+                },
+                "sender": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "kapps.AttributesData": {
+            "type": "object",
+            "properties": {
+                "IsNFTMetadataChangeStopped": {
+                    "type": "boolean"
+                },
+                "IsNFTMintStopped": {
+                    "type": "boolean"
+                },
+                "IsPaused": {
+                    "type": "boolean"
+                },
+                "IsRoyaltiesChangeStopped": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "kapps.KDAData": {
+            "type": "object",
+            "properties": {
+                "AdminAddress": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "AssetType": {
+                    "$ref": "#/definitions/kapps.KDAData_EnumAssetType"
+                },
+                "Attributes": {
+                    "$ref": "#/definitions/kapps.AttributesData"
+                },
+                "BurnedValue": {
+                    "type": "integer"
+                },
+                "CirculatingSupply": {
+                    "type": "integer"
+                },
+                "ID": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "InitialSupply": {
+                    "type": "integer"
+                },
+                "IssueDate": {
+                    "type": "integer"
+                },
+                "Logo": {
+                    "type": "string"
+                },
+                "MaxSupply": {
+                    "type": "integer"
+                },
+                "MintedValue": {
+                    "type": "integer"
+                },
+                "Name": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "OwnerAddress": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Precision": {
+                    "type": "integer"
+                },
+                "Properties": {
+                    "$ref": "#/definitions/kapps.PropertiesData"
+                },
+                "Roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/kapps.RolesData"
+                    }
+                },
+                "Royalties": {
+                    "$ref": "#/definitions/kapps.RoyaltiesData"
+                },
+                "Ticker": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "URIs": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "kapps.KDAData_EnumAssetType": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "KDAData_Fungible",
+                "KDAData_NonFungible",
+                "KDAData_SemiFungible"
+            ]
+        },
+        "kapps.LastClaim": {
+            "type": "object",
+            "properties": {
+                "Epoch": {
+                    "type": "integer"
+                },
+                "Timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "kapps.PropertiesData": {
+            "type": "object",
+            "properties": {
+                "CanAddRoles": {
+                    "type": "boolean"
+                },
+                "CanBurn": {
+                    "type": "boolean"
+                },
+                "CanChangeOwner": {
+                    "type": "boolean"
+                },
+                "CanFreeze": {
+                    "type": "boolean"
+                },
+                "CanMint": {
+                    "type": "boolean"
+                },
+                "CanPause": {
+                    "type": "boolean"
+                },
+                "CanWipe": {
+                    "type": "boolean"
+                },
+                "LimitTransfer": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "kapps.RolesData": {
+            "type": "object",
+            "properties": {
+                "Address": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "HasRoleDeposit": {
+                    "type": "boolean"
+                },
+                "HasRoleMint": {
+                    "type": "boolean"
+                },
+                "HasRoleSetITOPrices": {
+                    "type": "boolean"
+                },
+                "HasRoleTransfer": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "kapps.RoyaltiesData": {
+            "type": "object",
+            "properties": {
+                "Address": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "ITOFixed": {
+                    "type": "integer"
+                },
+                "ITOPercentage": {
+                    "type": "integer"
+                },
+                "MarketFixed": {
+                    "type": "integer"
+                },
+                "MarketPercentage": {
+                    "type": "integer"
+                },
+                "SplitRoyalties": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/kapps.RoyaltySplitData"
+                    }
+                },
+                "TransferFixed": {
+                    "type": "integer"
+                },
+                "TransferPercentage": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/kapps.RoyaltyData"
+                    }
+                }
+            }
+        },
+        "kapps.RoyaltyData": {
+            "type": "object",
+            "properties": {
+                "Amount": {
+                    "type": "integer"
+                },
+                "Percentage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "kapps.RoyaltySplitData": {
+            "type": "object",
+            "properties": {
+                "PercentITOFixed": {
+                    "type": "integer"
+                },
+                "PercentITOPercentage": {
+                    "type": "integer"
+                },
+                "PercentMarketFixed": {
+                    "type": "integer"
+                },
+                "PercentMarketPercentage": {
+                    "type": "integer"
+                },
+                "PercentTransferFixed": {
+                    "type": "integer"
+                },
+                "PercentTransferPercentage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "kapps.UserBucket": {
+            "type": "object",
+            "properties": {
+                "Delegation": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "StakedAt": {
+                    "type": "integer"
+                },
+                "StakedEpoch": {
+                    "type": "integer"
+                },
+                "UnstakedEpoch": {
+                    "type": "integer"
+                },
+                "Value": {
+                    "type": "integer"
+                }
+            }
+        },
+        "kapps.UserKDA": {
+            "type": "object",
+            "properties": {
+                "Balance": {
+                    "type": "integer"
+                },
+                "Buckets": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/kapps.UserBucket"
+                    }
+                },
+                "FrozenBalance": {
+                    "type": "integer"
+                },
+                "LastClaim": {
+                    "$ref": "#/definitions/kapps.LastClaim"
+                },
+                "MIME": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Metadata": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "kdafeespool.KDAFeesPoolData": {
+            "type": "object",
+            "properties": {
+                "Active": {
+                    "type": "boolean"
+                },
+                "AdminAddress": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "ConvertedFees": {
+                    "type": "integer"
+                },
+                "FRatioKDA": {
+                    "type": "integer"
+                },
+                "FRatioKLV": {
+                    "type": "integer"
+                },
+                "KDA": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "KDABalance": {
+                    "type": "integer"
+                },
+                "KLVBalance": {
+                    "type": "integer"
+                },
+                "OwnerAddress": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.AccountNonceResponse": {
+            "type": "object",
+            "properties": {
+                "firstPendingNonce": {
+                    "type": "integer"
+                },
+                "nonce": {
+                    "type": "integer"
+                },
+                "txPending": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.AvailableClaimListResponse": {
+            "type": "object",
+            "properties": {
+                "assets": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.AvailableClaimResponse"
+                    }
+                }
+            }
+        },
+        "models.AvailableClaimResponse": {
+            "type": "object",
+            "properties": {
+                "allStakingRewards": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "allowance": {
+                    "type": "integer"
+                },
+                "stakingRewards": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.BalanceResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.BroadcastTXResponse": {
+            "type": "object",
+            "properties": {
+                "txCount": {
+                    "type": "integer"
+                },
+                "txHash": {
+                    "type": "string"
+                },
+                "txsHashes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.KDAResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "asset": {
+                    "type": "string"
+                },
+                "userKDA": {
+                    "$ref": "#/definitions/kapps.UserKDA"
+                }
+            }
+        },
+        "models.NodeOverview": {
+            "type": "object",
+            "properties": {
+                "baseTxSize": {
+                    "type": "integer"
+                },
+                "chainID": {
+                    "type": "string"
+                },
+                "currentSlot": {
+                    "type": "integer"
+                },
+                "epochNumber": {
+                    "type": "integer"
+                },
+                "nonce": {
+                    "type": "integer"
+                },
+                "nonceAtEpochStart": {
+                    "type": "integer"
+                },
+                "slotAtEpochStart": {
+                    "type": "integer"
+                },
+                "slotCurrentTimestamp": {
+                    "type": "integer"
+                },
+                "slotDuration": {
+                    "type": "integer"
+                },
+                "slotsPerEpoch": {
+                    "type": "integer"
+                },
+                "startTime": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.SendTXResponse": {
+            "type": "object",
+            "properties": {
+                "result": {},
+                "txHash": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SimulateTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "bandwidthFee": {
+                    "type": "integer"
+                },
+                "kappFee": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TransactionPoolItem": {
+            "type": "object",
+            "properties": {
+                "hash": {
+                    "type": "string"
+                },
+                "nonce": {
+                    "type": "integer"
+                },
+                "sender": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TransactionPoolResponse": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "sender": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TransactionPoolItem"
+                    }
+                }
+            }
+        },
+        "node.NodeOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "overview": {
+                    "$ref": "#/definitions/models.NodeOverview"
+                }
+            }
+        },
+        "node.QueryDebugRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "search": {
+                    "type": "string"
+                }
+            }
+        },
+        "node.statisticsResponse": {
+            "type": "object",
+            "properties": {
+                "averageBlockTxCount": {
+                    "type": "string"
+                },
+                "averageTPS": {
+                    "type": "string"
+                },
+                "blockNumber": {
+                    "type": "integer"
+                },
+                "currentBlockTxCount": {
+                    "type": "integer"
+                },
+                "liveTPS": {
+                    "type": "number"
+                },
+                "peakTPS": {
+                    "type": "number"
+                },
+                "slotNumber": {
+                    "type": "integer"
+                },
+                "slotTime": {
+                    "type": "integer"
+                },
+                "totalProcessedTxCount": {
+                    "type": "string"
+                }
+            }
+        },
+        "shared.GenericAPIResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/shared.ReturnCode"
+                },
+                "data": {},
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "shared.ReturnCode": {
+            "type": "string",
+            "enum": [
+                "successful",
+                "internal_issue",
+                "bad_request",
+                "system_busy"
+            ],
+            "x-enum-varnames": [
+                "ReturnCodeSuccess",
+                "ReturnCodeInternalError",
+                "ReturnCodeRequestError",
+                "ReturnCodeSystemBusy"
+            ]
+        },
+        "state.List": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+            ],
+            "x-enum-varnames": [
+                "List_inactive",
+                "List_observer",
+                "List_waiting",
+                "List_eligible",
+                "List_elected",
+                "List_leaving",
+                "List_jailed"
+            ]
+        },
+        "state.PeerAccountData": {
+            "type": "object",
+            "properties": {
+                "AccumulatedFees": {
+                    "type": "integer"
+                },
+                "BLSPublicKey": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "ConsecutiveProposerMisses": {
+                    "type": "integer"
+                },
+                "Index": {
+                    "type": "integer"
+                },
+                "LeaderSuccessRate": {
+                    "$ref": "#/definitions/state.SignRate"
+                },
+                "List": {
+                    "$ref": "#/definitions/state.List"
+                },
+                "NumSelectedInSuccessBlocks": {
+                    "type": "integer"
+                },
+                "OwnerAddress": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Rating": {
+                    "type": "integer"
+                },
+                "Revoked": {
+                    "type": "boolean"
+                },
+                "RootHash": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "ShardId": {
+                    "type": "integer"
+                },
+                "TempRating": {
+                    "type": "integer"
+                },
+                "TotalLeaderSuccessRate": {
+                    "$ref": "#/definitions/state.SignRate"
+                },
+                "TotalValidatorIgnoredSignaturesRate": {
+                    "type": "integer"
+                },
+                "TotalValidatorSuccessRate": {
+                    "$ref": "#/definitions/state.SignRate"
+                },
+                "ValidatorIgnoredSignaturesRate": {
+                    "type": "integer"
+                },
+                "ValidatorSuccessRate": {
+                    "$ref": "#/definitions/state.SignRate"
+                }
+            }
+        },
+        "state.SignRate": {
+            "type": "object",
+            "properties": {
+                "NumFailure": {
+                    "type": "integer"
+                },
+                "NumSuccess": {
+                    "type": "integer"
+                }
+            }
+        },
+        "state.ValidatorApiResponse": {
+            "type": "object",
+            "properties": {
+                "NumLeaderFailure": {
+                    "type": "integer"
+                },
+                "NumLeaderSuccess": {
+                    "type": "integer"
+                },
+                "NumValidatorFailure": {
+                    "type": "integer"
+                },
+                "NumValidatorIgnoredSignatures": {
+                    "type": "integer"
+                },
+                "NumValidatorSuccess": {
+                    "type": "integer"
+                },
+                "Rating": {
+                    "type": "number"
+                },
+                "RatingModifier": {
+                    "type": "number"
+                },
+                "Revoked": {
+                    "type": "boolean"
+                },
+                "TempRating": {
+                    "type": "number"
+                },
+                "TotalNumLeaderFailure": {
+                    "type": "integer"
+                },
+                "TotalNumLeaderSuccess": {
+                    "type": "integer"
+                },
+                "TotalNumValidatorFailure": {
+                    "type": "integer"
+                },
+                "TotalNumValidatorIgnoredSignatures": {
+                    "type": "integer"
+                },
+                "TotalNumValidatorSuccess": {
+                    "type": "integer"
+                },
+                "ValidatorStatus": {
+                    "type": "string"
+                }
+            }
+        },
+        "time.Duration": {
+            "type": "integer",
+            "format": "int64",
+            "enum": [
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
+            ],
+            "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
+            ]
+        },
+        "transaction.BroadcastTXRequest": {
+            "type": "object",
+            "properties": {
+                "tx": {
+                    "$ref": "#/definitions/transaction.Transaction"
+                },
+                "txs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transaction.Transaction"
+                    }
+                }
+            }
+        },
+        "transaction.FeesResponse": {
+            "type": "object",
+            "properties": {
+                "bandwidthFee": {
+                    "type": "integer"
+                },
+                "gasEstimated": {
+                    "type": "integer"
+                },
+                "gasMultiplier": {
+                    "type": "integer"
+                },
+                "kAppFee": {
+                    "type": "integer"
+                },
+                "kdaFee": {
+                    "$ref": "#/definitions/transaction.Transaction_KDAFee"
+                },
+                "returnMessage": {
+                    "type": "string"
+                },
+                "safetyMargin": {
+                    "type": "integer"
+                }
+            }
+        },
+        "transaction.TXContract": {
+            "type": "object",
+            "properties": {
+                "Parameter": {
+                    "$ref": "#/definitions/anypb.Any"
+                },
+                "Type": {
+                    "$ref": "#/definitions/transaction.TXContract_ContractType"
+                }
+            }
+        },
+        "transaction.TXContract_ContractType": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                63
+            ],
+            "x-enum-varnames": [
+                "TXContract_TransferContractType",
+                "TXContract_CreateAssetContractType",
+                "TXContract_CreateValidatorContractType",
+                "TXContract_ValidatorConfigContractType",
+                "TXContract_FreezeContractType",
+                "TXContract_UnfreezeContractType",
+                "TXContract_DelegateContractType",
+                "TXContract_UndelegateContractType",
+                "TXContract_WithdrawContractType",
+                "TXContract_ClaimContractType",
+                "TXContract_UnjailContractType",
+                "TXContract_AssetTriggerContractType",
+                "TXContract_SetAccountNameContractType",
+                "TXContract_ProposalContractType",
+                "TXContract_VoteContractType",
+                "TXContract_ConfigITOContractType",
+                "TXContract_SetITOPricesContractType",
+                "TXContract_BuyContractType",
+                "TXContract_SellContractType",
+                "TXContract_CancelMarketOrderContractType",
+                "TXContract_CreateMarketplaceContractType",
+                "TXContract_ConfigMarketplaceContractType",
+                "TXContract_UpdateAccountPermissionContractType",
+                "TXContract_DepositContractType",
+                "TXContract_ITOTriggerContractType",
+                "TXContract_SmartContractType"
+            ]
+        },
+        "transaction.Transaction": {
+            "type": "object",
+            "properties": {
+                "Block": {
+                    "type": "integer"
+                },
+                "GasLimit": {
+                    "type": "integer"
+                },
+                "GasMultiplier": {
+                    "type": "integer"
+                },
+                "RawData": {
+                    "$ref": "#/definitions/transaction.Transaction_Raw"
+                },
+                "Receipts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transaction.Transaction_Receipt"
+                    }
+                },
+                "Result": {
+                    "$ref": "#/definitions/transaction.Transaction_TXResult"
+                },
+                "ResultCode": {
+                    "$ref": "#/definitions/transaction.Transaction_TXResultCode"
+                },
+                "Signature": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                }
+            }
+        },
+        "transaction.Transaction_KDAFee": {
+            "type": "object",
+            "properties": {
+                "Amount": {
+                    "description": "TODO: allow spread",
+                    "type": "integer"
+                },
+                "KDA": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "transaction.Transaction_Raw": {
+            "type": "object",
+            "properties": {
+                "BandwidthFee": {
+                    "type": "integer"
+                },
+                "ChainID": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Contract": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transaction.TXContract"
+                    }
+                },
+                "Data": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "KAppFee": {
+                    "type": "integer"
+                },
+                "KDAFee": {
+                    "$ref": "#/definitions/transaction.Transaction_KDAFee"
+                },
+                "Nonce": {
+                    "type": "integer"
+                },
+                "PermissionID": {
+                    "type": "integer"
+                },
+                "Sender": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "Version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "transaction.Transaction_Receipt": {
+            "type": "object",
+            "properties": {
+                "Data": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                }
+            }
+        },
+        "transaction.Transaction_TXResult": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1
+            ],
+            "x-enum-varnames": [
+                "Transaction_SUCCESS",
+                "Transaction_FAILED"
+            ]
+        },
+        "transaction.Transaction_TXResultCode": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                99
+            ],
+            "x-enum-varnames": [
+                "Transaction_Ok",
+                "Transaction_OutOfFunds",
+                "Transaction_AccountError",
+                "Transaction_AssetError",
+                "Transaction_ContractInvalid",
+                "Transaction_ContractNotFound",
+                "Transaction_FeeInvalid",
+                "Transaction_ParameterInvalid",
+                "Transaction_APRInvalid",
+                "Transaction_AssetIDInvalid",
+                "Transaction_AssetTypeInvalid",
+                "Transaction_AssetCantBeMinted",
+                "Transaction_AssetCantBeBurned",
+                "Transaction_AssetCantBePaused",
+                "Transaction_AssetCantBeDelegated",
+                "Transaction_AssetOwnerCantBeChanged",
+                "Transaction_AccountNotOwner",
+                "Transaction_CommissionTooHigh",
+                "Transaction_DelegationAmountInvalid",
+                "Transaction_ProposalNotActive",
+                "Transaction_ValueInvalid",
+                "Transaction_AmountInvalid",
+                "Transaction_BucketIDInvalid",
+                "Transaction_KeyConflict",
+                "Transaction_MaxDelegationAmount",
+                "Transaction_InvalidPeerKey",
+                "Transaction_MinKFIStakedUnreached",
+                "Transaction_MaxSupplyExceeded",
+                "Transaction_SaveAccountError",
+                "Transaction_LoadAccountError",
+                "Transaction_SameAccountError",
+                "Transaction_AssetPaused",
+                "Transaction_DeletegateError",
+                "Transaction_WithdrawNotAvailable",
+                "Transaction_ErrOverflow",
+                "Transaction_SetStakingErr",
+                "Transaction_SetMarketOrderErr",
+                "Transaction_BalanceError",
+                "Transaction_KAPPError",
+                "Transaction_UnfreezeError",
+                "Transaction_UndelegateError",
+                "Transaction_WithdrawError",
+                "Transaction_ClaimError",
+                "Transaction_BucketsExceeded",
+                "Transaction_AssetCantBeWiped",
+                "Transaction_AssetCantAddRoles",
+                "Transaction_FreezeError",
+                "Transaction_ITONotActive",
+                "Transaction_NFTMintStopped",
+                "Transaction_RoyaltiesChangeStopped",
+                "Transaction_ITOKAPPError",
+                "Transaction_ITOWhiteListError",
+                "Transaction_NFTMetadataChangeStopped",
+                "Transaction_AlreadyExists",
+                "Transaction_IteratorLimitReached",
+                "Transaction_VMFunctionNotFound",
+                "Transaction_VMFunctionWrongSignature",
+                "Transaction_VMUserError",
+                "Transaction_VMOutOfGas",
+                "Transaction_VMAccountCollision",
+                "Transaction_VMCallStackOverFlow",
+                "Transaction_VMExecutionPanicked",
+                "Transaction_VMExecutionFailed",
+                "Transaction_VMUpgradeFailed",
+                "Transaction_VMSimulateFailed",
+                "Transaction_KDATransferNotAllowed",
+                "Transaction_Fail"
+            ]
+        },
+        "transaction.sendTXRequest": {
+            "type": "object",
+            "properties": {
+                "contract": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "contracts": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "kdaFee": {
+                    "type": "string"
+                },
+                "nonce": {
+                    "type": "integer"
+                },
+                "permID": {
+                    "type": "integer"
+                },
+                "sender": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                }
+            }
+        },
+        "vm.CallType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "DirectCall",
+                "KDATransferAndExecute",
+                "ExecOnDestByCaller"
+            ]
+        },
+        "vm.KDATransferApi": {
+            "type": "object",
+            "properties": {
+                "tokenName": {
+                    "type": "string"
+                },
+                "tokenNonce": {
+                    "type": "integer"
+                },
+                "tokenType": {
+                    "type": "integer"
+                },
+                "value": {
+                    "$ref": "#/definitions/big.Int"
+                }
+            }
+        },
+        "vm.LogEntryApi": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "identifier": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                }
+            }
+        },
+        "vm.OutputAccountApi": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "callType": {
+                    "$ref": "#/definitions/vm.CallType"
+                },
+                "code": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "codeMetaData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "outputTransfers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/vm.OutputTransferApi"
+                    }
+                },
+                "storageUpdates": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/vm.StorageUpdateApi"
+                    }
+                }
+            }
+        },
+        "vm.OutputTransferApi": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "receiver": {
+                    "type": "string"
+                },
+                "senderAddress": {
+                    "type": "string"
+                },
+                "tokenInfo": {
+                    "$ref": "#/definitions/vm.KDATransferApi"
+                }
+            }
+        },
+        "vm.StorageUpdateApi": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "offset": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "vm.VMOutputApi": {
+            "type": "object",
+            "properties": {
+                "deletedAccounts": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "gasRemaining": {
+                    "type": "integer"
+                },
+                "logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/vm.LogEntryApi"
+                    }
+                },
+                "outputAccounts": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/vm.OutputAccountApi"
+                    }
+                },
+                "returnCode": {
+                    "type": "string"
+                },
+                "returnData": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "returnMessage": {
+                    "type": "string"
+                }
+            }
+        },
+        "vm.VMValueRequest": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "caller": {
+                    "type": "string"
+                },
+                "funcName": {
+                    "type": "string"
+                },
+                "sameScState": {
+                    "type": "boolean"
+                },
+                "scAddress": {
+                    "type": "string"
+                },
+                "shouldBeSynced": {
+                    "type": "boolean"
+                },
+                "value": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,2538 @@
+Reference
+
+Anotations
+Modules
+Payments
+Calls
+BuiltIn Contracts
+Upgrading
+API Functions
+Storage Mappers
+Rust Testing Framework
+Rust Testing Framework Functions
+Debugging
+Random Numbers
+
+Getting Started with klever-sc Annotations
+Overview
+klever-sc annotations, known in Rust as "attributes," form the cornerstone of smart contract creation within this framework. Although it's technically possible to write contracts without these annotations or code generation macros, doing so greatly complicates the process.
+
+The primary goal of klever-sc is to enhance the readability and conciseness of code, and annotations play a key role in achieving this.
+
+For beginners, the Crowdfunding tutorial is a great resource. This document aims to be a comprehensive guide to all the annotations you'll encounter in smart contract development.
+
+Annotations for Traits
+#[klever_sc::contract]
+This annotation is essential for any trait that defines the core endpoints and logic of a smart contract. Each crate should contain only one such trait.
+
+It's important to note that this annotation does not accept any additional arguments.
+
+#[klever_sc::module]
+Similar to the contract annotation, the module annotation is used to designate a trait as a smart contract module. It also doesn't require any extra arguments.
+
+🚨 A Rust module can only contain one contract, module, or proxy annotation. If multiple annotations exist in one file, they must be enclosed in separate mod module_name { ... } declarations.
+#[klever_sc::proxy]
+This annotation is used for traits that act as proxies for smart contract calls. More details can be found in the contract calls reference.
+
+In brief, contracts automatically generate a proxy. If a manual proxy is needed, this annotation can be used to create it. Like the others, it doesn't take extra arguments.
+
+🚨 The same limitation applies here as with contract and module annotations in a single Rust module.
+Annotations for Methods
+#[init]
+Each smart contract must have a constructor, marked by the init annotation, which is called only once during deployment.
+
+#[klever_sc::contract]
+pub trait Example {
+    #[init]
+    fn this_is_the_constructor(
+        constructor_arg_1: u32,
+        constructor_arg_2: BigUint) {
+        // ...
+    }
+}
+
+Copy
+Copied!
+Note: The constructor of the new code is called during smart contract upgrades and can only be invoked once.
+
+#[endpoint] and #[view]
+Endpoints, marked with these annotations, are the contract's public methods. They are the only methods visible externally.
+
+While #[view] suggests read-only methods, this isn't enforced yet. However, distinguishing between #[view] and #[endpoint] annotations is still useful for future compatibility and intent clarification.
+
+The Rust method name becomes the endpoint name by default, but an explicit name can be specified.
+
+Example:
+
+#[klever_sc::contract]
+pub trait Example {
+	#[endpoint]
+	fn example(&self) {
+    }
+
+    #[endpoint(camelCaseEndpointName)]
+	fn snake_case_method_name(&self, value: BigUint) {
+    }
+
+    fn private_method(&self, value: &BigUint) {
+    }
+
+    #[view(getData)]
+	fn get_data(&self) -> u32{
+        0
+    }
+}
+
+Copy
+Copied!
+Note: Arguments and return types for endpoints must either be serializable or conform to specific endpoint types, like MultiValueEncoded. Private methods do not have this requirement.
+
+Storage Annotations
+klever-sc provides annotations for storage operations to simplify data management and serialization.
+
+#[storage_get("key")]
+This annotation retrieves data from storage, as shown in the examples below:
+
+#[klever_sc::contract]
+pub trait Adder {
+	#[view(getSum)]
+	#[storage_get("sum")]
+	fn get_sum(&self) -> BigUint;
+
+	#[storage_get("example_map")]
+    fn get_value(&self, key_1: u32, key_2: u32) -> SerializableType;
+
+Copy
+Copied!
+#[storage_set("key")]
+This annotation is for writing data to storage, as demonstrated here:
+
+#[klever_sc::contract]
+pub trait Adder {
+	#[storage_set("sum")]
+	fn set_sum(&self, sum: &BigUint);
+
+	#[storage_set("example_map")]
+    fn set_value(&self, key_1: u32, key_2
+
+: u32, value: &SerializableType);
+
+Copy
+Copied!
+🚨 Be cautious with key naming to avoid overwriting unintended data.
+#[storage_mapper("key")]
+Storage mappers handle multiple storage keys for reading and writing data. Example usage:
+
+	#[storage_mapper("user_status")]
+	fn user_status(&self) -> SingleValueMapper<UserStatus>;
+
+    #[storage_mapper("list_mapper")]
+	fn list_mapper(&self, sub_key: usize) -> LinkedListMapper<u32>;
+
+Copy
+Copied!
+#[storage_is_empty("key")] and #[storage_clear("key")]
+These annotations check if storage is empty and clear storage values, respectively. Example:
+
+	#[storage_is_empty("opt_addr")]
+	fn is_empty_opt_addr(&self) -> bool;
+
+	#[storage_clear("field_to_clear")]
+	fn clear_storage_value(&self);
+
+Copy
+Copied!
+Events
+Events are used to log actions during contract execution. They are not stored on-chain but are hashed for verification. Example:
+
+	#[event("transfer")]
+	fn transfer_event(
+		&self,
+		#[indexed] from: &ManagedAddress,
+		#[indexed] to: &ManagedAddress,
+		#[indexed] token_id: u32,
+        data: ManagedBuffer,
+	);
+
+Copy
+Copied!
+Proxies and Output Names
+The #[proxy] annotation is used for convenient contract calling. The #[output_names] annotation names the outputs of an endpoint.
+
+Modularization in Smart Contract Development
+Overview
+Smart contract modules play a crucial role in structuring contracts into more manageable segments. Their reusability and ability to minimize code repetition make them valuable in contract development.
+
+Module Creation
+You can define modules either within the same crate as the primary contract or in a distinct standalone crate. The latter approach is beneficial for modules intended for use in various contracts.
+
+A module is essentially a trait annotated with the #[klever_sc::module] macro, allowing standard smart contract functionalities such as endpoints, events, and storage mappers.
+
+Consider the example of a storage module:
+
+#[klever_sc::module]
+pub trait StorageModule {
+    #[view(getQuorum)]
+    #[storage_mapper("firstStorage")]
+    fn first_storage(&self) -> SingleValueMapper<usize>;
+
+    #[view]
+    #[storage_mapper("secondStorage")]
+    fn second_storage(&self) -> SingleValueMapper<u64>;
+}
+
+Copy
+Copied!
+In your core file, typically lib.rs, you should declare the module. For instance, if the storage module's file is storage.rs, it's declared as follows:
+
+pub mod storage;
+
+Copy
+Copied!
+Integrating a Module
+Modules can be included in other modules and contracts alike:
+
+pub trait SetupModule:
+    crate::storage::StorageModule
+    + crate::util::UtilModule {
+
+}
+
+Copy
+Copied!
+#[klever_sc::contract]
+pub trait MainContract:
+    setup::SetupModule
+    + storage::StorageModule
+    + util::UtilModule {
+
+}
+
+Copy
+Copied!
+It's important to note that the main contract must implement all the modules used by any sub-modules. In the given example, the MainContract must implement UtilModule to use SetupModule, even if it doesn't directly use UtilModule.
+
+Wrapping Up
+Our modular system is designed to streamline the process of writing maintainable and reusable smart contract code.
+
+For more examples and modules, visit: Klever VM SDK RS Modules
+
+Understanding Payments in Smart Contracts
+Introduction to Payments in Smart Contracts
+This section aims to provide a comprehensive guide on how smart contracts handle payments, focusing on both receiving and sending tokens.
+
+Note: On the Klever network, it is not possible to simultaneously send KLV and any KDA token. Consequently, you will not find any syntax supporting the transfer of both in either receiving or sending scenarios.
+
+Methods of Receiving Payments
+Smart contracts can receive payments in two primary ways:
+
+Directly, akin to regular accounts, without activating any contract code.
+Through specific endpoints.
+Direct Receipt of Payments
+Direct transfers of KLV and KDA tokens to smart contracts operate similarly to transfers to externally owned accounts (EOAs) – the tokens move from one account to another without engaging the VM.
+
+However, a contract's ability to directly receive tokens is governed by a "payable" flag, a part of the code metadata set during the contract's deployment or upgrade.
+
+This design choice stems from the Klever blockchain's approach to direct transfers, which prioritizes simplicity and consistent gas costs, foregoing mechanisms for contracts to respond to such transfers. Consequently, most contracts opt out of accepting direct payments to maintain control over their internal state.
+
+Receipt of Payments via Endpoints
+The prevalent method for contracts to accept payments is through endpoints marked with the #[payable(...)] annotation.
+
+Important: The "payable" flag in the code metadata is only relevant to direct transfers. It does not influence token transfers via contract endpoints.
+
+Endpoints designed to accept only KLV should use the #[payable("KLV")] annotation:
+
+#[endpoint]
+#[payable("KLV")]
+fn accept_KLV(&self) {
+	// ...
+}
+
+Copy
+Copied!
+To allow for any type of payment, use #[payable("*")]:
+
+#[endpoint]
+#[payable("*")]
+fn accept_any_payment(&self) {
+	// ...
+}
+
+Copy
+Copied!
+Note: It's possible to hard-code a specific token identifier in the payable attribute, like #[payable("MYTOKEN-123456")]. This is a less common practice, as tokens are typically configured in storage or at runtime.
+
+You can impose additional restrictions on incoming tokens within the endpoint's body by utilizing the call value API, which provides various functions for managing expected payments.
+
+Approaches to Sending Payments
+After exploring how contracts receive tokens, let's look at how they can send them, primarily through methods in the self.send() component.
+
+Direct Token Transfers
+Contracts can directly send tokens using several API methods:
+
+Methods like self.send().direct_kda(to, token, nonce, amount) enable direct token transfers to a specific address.
+Multiple methods exist for different scenarios, including zero and non-zero amounts, KLV or KDA tokens, single or multiple KDA tokens, and more.
+Sending Tokens to Contract Endpoints
+To send tokens to contract endpoints, a contract call is necessary. While direct API methods exist for this purpose, it's recommended to create and send a ContractCall. Details on this process can be found in the contract calls reference.
+
+Low-Level API Usage
+In cases where the standard methods don't suffice, self.send_raw() offers more granular control for token transfers. This should be a last resort, as detailed in the contract calls page.
+
+Function calls are common in programming, but when it comes to smart contracts, there are additional complexities such as token transfers, gas specification, and different call types. A versatile system is required to handle these various needs efficiently.
+
+This system presented below is applicable both on- and off-chain, serving as a general Rust framework for composing and sending calls in any context.
+
+ℹ️ While basic API methods can be used to perform calls by serializing arguments and specifying endpoints as strings, this approach lacks compiler verification, limits call configuration, and often leads to code duplication. Therefore, it's recommended to use contract call syntax for formatting transactions.
+Contract calls: base
+Smart contract calls on the blockchain lack arity and data type awareness. In other words, the blockchain itself does not validate the number or types of arguments or results; they exist solely as raw binary data fields.
+
+Responsibility for managing argument count and deserialization lies with the contract. If a transaction contains an incorrect number of arguments, only the contract can raise an objection. Similarly, if types are mismatched, the contract discovers this during deserialization.
+
+The descriptor for a smart contract's inputs is termed the ABI, residing off-chain. Essentially, the ABI comprises endpoint names alongside argument names and type descriptions. Understanding a smart contract's ABI is crucial for effective invocation.
+
+In the Rust ecosystem, the equivalent of ABI is a helper trait known as a proxy. Its sole purpose is to furnish a typed interface for any smart contract, accepting typed arguments and serializing them as per the Klever serialization format.
+
+Simple example:
+
+adder_proxy.add(3u32)
+
+Copy
+Copied!
+Here, we're utilizing a proxy for the adder contract. The add method doesn't directly invoke the smart contract. Instead, it generates a contract call object with the data field add@03, a format interpretable by the blockchain. We'll delve into how this contract call can eventually be executed later. For now, let's explore how to obtain one of these proxies.
+
+This guide furnishes examples on calling a contract from another contract. Additional examples are available in the contract composability feature tests.
+
+There are three methods for making these calls:
+
+Importing the callee contract's source code and utilizing the auto-generated proxy (recommended).
+Manually writing the proxy.
+Manually serializing the function name and arguments (not recommended).
+Proxies from contracts
+Whenever a smart contract is compiled, a proxy is generated alongside it. This proxy, although invisible, is produced by the procedural macros of the framework, notably #[klever_sc::contract] and #[klever_sc::module].
+
+This implies that if you have access to the crate of the target contract, you can import it directly and automatically gain access to the generated proxy.
+
+[dependencies.contract-crate-name]
+path = "relative-path-to-contract-crate"
+
+Copy
+Copied!
+Note
+Contract and module crates can be imported like any other Rust crates, using:
+
+Relative paths
+Crate version if released
+Git branch, tag, or commit
+Relative paths are common for contracts in the same workspace.
+
+If the contract includes modules with functionalities you may need to call, you'll need to import those as well.
+
+If the modules reside in different crates than the target contract (and aren't re-exported by the target contract), you'll also need to add the module to dependencies, similar to how you added the target contract.
+
+These proxies are traits, just like the contracts themselves. While the implementation is automatic, to call them, the proxy trait must be in scope. Hence, you'll often see imports like this where these proxies are used:
+
+use module_namespace::ProxyTrait as _;
+
+Copy
+Copied!
+If you're using the rust-analyzer VSCode extension, it might complain about not finding this, but the compiler can find it without issues when you build the contract.
+
+Once you've imported the contract and any external modules it utilizes, you need to declare a proxy creator function in the contract:
+
+#[proxy]
+fn callee_contract_proxy(&self, callee_sc_address: ManagedAddress) -> contract_namespace::Proxy<Self::Api>;
+
+Copy
+Copied!
+This function doesn't perform much; it just handles proxy trait imports and initializes the proxy neatly for you.
+
+This function creates an object containing all the endpoints of the callee contract and handles serialization automatically.
+
+Suppose you have the following endpoint in the contract you wish to call:
+
+#[endpoint(caleeEndpoint)]
+fn callee_endpoint(&self, arg: BigUint) -> BigUint {
+	// implementation
+}
+
+Copy
+Copied!
+🚨 Importing a smart contract crate only works if both contracts use the exact same framework version. Otherwise, the compiler rightfully complains about interface mismatches.
+If the target contract isn't under our control, it's often wiser to manually compose the necessary proxy.
+Manually specified proxies
+If there's a need to avoid a dependency on the target contract crate, or if there's no access to it at all, it's always an option to manually create such a proxy. This approach might be preferable if the framework versions of the two contracts differ or are not under our control.
+
+Below is an example of such a manually created proxy:
+
+mod callee_proxy {
+    klever_sc::imports!();
+
+    #[klever_sc::proxy]
+    pub trait CalleeContract {
+        #[payable("*")]
+		#[endpoint(myPayableEndpoint)]
+		fn my_payable_endpoint(&self, arg: BigUint) -> BigUint;
+    }
+}
+
+Copy
+Copied!
+The syntax mirrors that of contracts, except the endpoints lack implementation.
+
+🚨 Similar to smart contracts and modules, proxy declarations must reside in their own module. This can be either a separate file or an explicit declaration, such as mod callee_proxy {} above.
+This separation is necessary because a considerable amount of code is generated in the background, which could lead to interference otherwise.
+Manually declared proxies are indistinguishable from auto-generated ones, so calling them follows the same pattern:
+
+#[proxy]
+fn callee_contract_proxy(&self, sc_address: ManagedAddress) -> callee_proxy::Proxy<Self::Api>;
+
+Copy
+Copied!
+No proxy
+The purpose of proxies is to aid in constructing contract calls in a type-safe manner. However, it's not mandatory to use them. There are instances where we specifically intend to construct contract calls manually and serialize the arguments ourselves.
+
+We aim to create a ContractCallNoPayment object. Payment considerations will be addressed later.
+
+The ContractCallNoPayment takes two type arguments: the API and the expected return type. When inside a contract, the API remains consistent across the entire contract. To avoid explicit specification, we can utilize the following syntax:
+
+let mut contract_call = self.send()
+	.contract_call::<ResultType>(to, endpoint_name);
+contract_call.push_raw_argument(arg1_encoded);
+contract_call.push_raw_argument(arg2_encoded);
+
+Copy
+Copied!
+If attempting to create the same object outside of a smart contract, we lack the self.send() API. Nonetheless, the equivalent syntax is always available:
+
+let mut contract_call = ContractCallNoPayment::<StaticApi, ResultType>::new(to, endpoint_name);
+contract_call.push_raw_argument(arg1_encoded);
+contract_call.push_raw_argument(arg2_encoded);
+
+Copy
+Copied!
+Diagram
+Thus far, we've created a contract call without payment, represented by an object of type ContractCallNoPayment, in the following ways:
+
+
+
+Contract calls: payments
+Now that we've specified the recipient address, the function, and the arguments, it's time to incorporate additional configurations: token transfers and gas considerations.
+
+Let's consider calling a #[payable] endpoint with the following definition:
+
+#[payable("*")]
+#[endpoint(myPayableEndpoint)]
+fn my_payable_endpoint(&self, arg: BigUint) -> BigUint {
+	let payment = self.call_value().any_payment();
+	// ...
+}
+
+Copy
+Copied!
+For more information on payable endpoints and simple transfers, refer to the documentation here. This section pertains specifically to transfers during contract calls.
+
+KLV transfer
+To include a KLV transfer in a contract call, simply append .with_klv_transfer to the builder pattern:
+
+self.callee_contract_proxy(callee_sc_address)
+	.my_payable_endpoint(my_biguint_arg)
+	.with_klv_transfer(klv_amount)
+
+Copy
+Copied!
+Note that this method returns a new type of object, ContractCallWithKlv, instead of ContractCallNoPayment. Having multiple types of contract calls offers several advantages:
+
+Compile-time restrictions on available methods in the builder can be enforced. For example, it's possible to add KDA transfers to ContractCallNoPayment but not to ContractCallWithKlv. This eliminates the need to enforce the runtime restriction that KLV and KDA transfers cannot coexist, making it more apparent to developers.
+Contracts become smaller because the compiler knows which types of transfers occur within the contract and which do not. For example, if a contract only ever transfers KLV, there's no need for the code that prepares KDA transfers within the contract. This optimization would not have been possible if the check had been done only at runtime.
+KDA transfers
+On the Klever blockchain, you can transfer multiple KDA tokens at once. A single type, ContractCallWithMultiKda, works for both single and multi-transfers. We can obtain such an object by starting with a ContractCallNoPayment and calling with_kda_transfer once or several times. The first call yields ContractCallWithMultiKda, while subsequent calls add more KDA transfers.
+
+Note
+There's more than one way to provide arguments to with_kda_transfer:
+
+as a tuple (token_identifier, nonce, amount);
+as a KdaTokenPayment object.
+They contain the same data, but sometimes one is more convenient to use than the other.
+
+Example:
+
+let kda_token_payment = self.call_value().single_kda();
+
+self.callee_contract_proxy(callee_sc_address)
+	.my_payable_endpoint(my_biguint_arg)
+	.with_kda_transfer((token_identifier_1, 0, 100_000u32.into()))
+	.with_kda_transfer((token_identifier_2, 1, 1u32.into()))
+	.with_kda_transfer(kda_token_payment)
+
+Copy
+Copied!
+In this example, arguments were passed both as a tuple and as a KdaTokenPayment object. When already having a KdaTokenPayment variable, it's easier to pass it directly.
+
+It's also possible to pass multiple KDA transfers at once:
+
+self.callee_contract_proxy(callee_sc_address)
+	.my_payable_endpoint(my_biguint_arg)
+	.with_multi_token_transfer(payments)
+
+Copy
+Copied!
+where payments is a ManagedVec of KdaTokenPayment.
+
+Mixed transfers
+In scenarios where we're uncertain about the types of transfers at compile time, we offer contract call types that support both KLV and KDA tokens.
+
+First, we have the single transfer type ContractCallWithKlvOrSingleKda, designed to handle either a single KDA transfer or KLV. While it used to be more prevalent before the introduction of wrapped KLV, nowadays, for most DeFi applications, it's more convenient to work solely with WKLV and disallow KLV transfers.
+
+let payment = self.call_value().klv_or_single_kda();
+self.callee_contract_proxy(callee_sc_address)
+	.my_payable_endpoint(my_biguint_arg)
+    .with_klv_or_single_kda_transfer(payment)
+
+Copy
+Copied!
+The most general object of this kind is ContractCallWithAnyPayment, capable of accepting any payment possible on the blockchain: either KLV or one or more KDAs.
+
+let payments = self.call_value().any_payment();
+self.callee_contract_proxy(callee_sc_address)
+	.my_payable_endpoint(my_biguint_arg)
+    .with_any_payment(payments)
+
+Copy
+Copied!
+Diagram
+To summarize, these are the various methods available to specify value transfers for a contract call:
+
+
+
+Contract calls: gas
+Specifying gas is straightforward. All contract call objects possess a with_gas_limit method, allowing gas specification at any point.
+
+Not all contract calls necessitate explicit gas limit specification; omitting it is acceptable in certain scenarios:
+
+Synchronous calls, by default, utilize all available gas as the upper limit, as unspent gas is returned to the caller anyway.
+Conversely, promises and transfer-execute calls do require explicit gas specification.
+
+self.callee_contract_proxy(callee_sc_address)
+	.callee_endpoint(my_biguint_arg)
+	.with_gas_limit(gas_limit)
+
+Copy
+Copied!
+Contract calls: execution
+Contract calls from another contract can be launched in several ways:
+
+Synchronous calls:
+Executed on destination context.
+Executed on destination context, readonly.
+Executed on the same context.
+Transfer-execute
+Multiple transfer-execute calls can be launched from a transaction, and unlike promises, they are already available on the mainnet.
+
+Transfer-execute calls do not require further configuration, aside from an explicit gas limit. Therefore, no specific object type is associated with them, and they can be launched immediately:
+
+self.callee_contract_proxy(callee_sc_address)
+	.callee_endpoint(my_biguint_arg)
+	.with_gas_limit(gas_limit)
+	.transfer_execute();
+
+Copy
+Copied!
+Synchronous calls
+Synchronous calls are executed inline, interrupting execution while they're executed and resuming afterwards. The result of the execution is immediately available and can be used in the transaction.
+
+No further configuration is needed for synchronous calls; the call is straightforward:
+
+let result: BigUint = self.callee_contract_proxy(callee_sc_address)
+	.callee_endpoint(my_biguint_arg)
+	.with_gas_limit(gas_limit)
+	.execute_on_dest_context();
+
+Copy
+Copied!
+or
+
+let result = self.callee_contract_proxy(callee_sc_address)
+	.callee_endpoint(my_biguint_arg)
+	.with_gas_limit(gas_limit)
+	.execute_on_dest_context::<BigUint>();
+
+Copy
+Copied!
+The type of the result must always be specified. The framework will check that the requested result is compatible with the original one, but won't impose it upon us. For example, an endpoint might return a u32 result, but we might choose to deserialize it as u64 or BigUint, which is acceptable since these types have similar semantics and representations. However, casting it to a ManagedBuffer won't be allowed.
+
+The execute_on_dest_context method is most commonly used for synchronous calls. Other alternatives include:
+
+execute_on_dest_context_readonly: Ensures the target contract doesn't change state at the blockchain level.
+execute_on_same_context: Useful for library-like contracts, where all changes are saved in the caller instead of the called contract.
+Diagram
+In summary, when we have a contract call object in a smart contract, these are the actions we can perform on it:
+
+
+
+CContract calls: complete diagram
+To recap, setting up a contract call from a contract involves the following steps:
+
+Obtain a proxy.
+Invoke it to acquire a basic contract call object.
+Optionally, include KLV or KDA token transfers.
+Optionally, specify a gas limit for the call.
+Combining all these elements into a comprehensive diagram, we have the following:
+
+
+
+Contract deploy: base
+A close relative of the contract call is the contract deploy call, which models the deployment or upgrade of a smart contract.
+
+It shares many similarities with contract calls, with some notable differences:
+
+The endpoint name is always init.
+No KDA transfers are allowed in init.
+They are executed slightly differently.
+
+
+The object encoding these deployment calls is named ContractDeploy. Unlike contract calls, there is only one such object.
+
+Creating this object is similar to contract calls: either through proxies or manually. Constructors in proxies naturally yield ContractDeploy objects.
+
+mod callee_proxy {
+    klever_sc::imports!();
+
+    #[klever_sc::proxy]
+    pub trait CalleeContract {
+		#[init]
+		fn init(&self, arg: BigUint) -> BigUint;
+    }
+}
+
+Copy
+Copied!
+self.callee_contract_proxy()
+	.init(my_biguint_arg)
+
+Copy
+Copied!
+Contract deploy: configuration
+Just like with regular contract calls, we can specify the gas limit and perform KLV transfers as part of the deployment process, as follows:
+
+self.callee_contract_proxy(callee_sc_address)
+	.init(my_biguint_arg)
+
+
+Copy
+Copied!
+self.callee_contract_proxy()
+	.init(my_biguint_arg)
+	.with_klv_transfer(klv_amount)
+    .with_gas_limit(gas_limit)
+
+Copy
+Copied!
+Contract deploy: execution
+Deploy
+Launching a contract deploy differs from a regular contract call and offers several methods.
+
+The simplest deploy operation is achieved by calling deploy_contract:
+
+let (new_address, result) = self.callee_contract_proxy()
+	.init(my_biguint_arg)
+	.deploy_contract::<ResultType>(code, code_metadata);
+
+Copy
+Copied!
+The methods for executing contract deploys are as follows:
+
+.deploy_contract(code, code_metadata): Deploys a new contract with the code provided.
+.deploy_from_source(source_address, code_metadata): Deploys a new contract with the same code as the contract at source_address. The advantage here is that the contract doesn't need to handle the new contract code, potentially saving gas. However, it requires the code to already be deployed elsewhere.
+Upgrade
+To upgrade a contract, we also need to specify the recipient address when setting up the ContractDeploy object, as follows:
+
+self.callee_contract_proxy()
+	.contract(calee_contract_address)
+	.init(123, 456)
+	.with_klv_transfer(payment)
+	.upgrade_contract(code, code_metadata);
+
+Copy
+Copied!
+Note the use of the .contract(...) method call.
+
+Like deploying, upgrading also offers two variants:
+
+.upgrade_contract(code, code_metadata): Upgrades the target contract to the new code and sets the new code metadata.
+.upgrade_from_source(source_address, code_metadata): Updates the target contract with the same code as the contract at source_address.
+
+Builtin Contracts
+The Klever Blockchain BuiltIn Contracts are a set of contracts that are supported in the Klever Blockchain network. They are used to manage the network's assets, such as KDA, KFI, and other fungible and non-fungible tokens.
+
+Methods
+Transfer
+    self.send().direct_kda(&to, &token, nonce, &amount);
+
+Copy
+Copied!
+Transfers assets to another address.
+
+Create Asset
+    self.send().kda_create(asset_type, name, ticker,
+        precision, owner, logo, initial_supply, max_supply, properties, royalties)
+
+Copy
+Copied!
+Creates a new fungible token or a NFT collection. The returned value is the
+
+Freeze
+    self.send().freeze(token, amount) -> ManagedBuffer
+
+Copy
+Copied!
+Freezes a certain amount of a token for staking. This frozen amount will be referred to as a "bucket". Returning the Bucket ID.
+
+Unfreeze
+    self.send().unfreeze(token, bucket_id);
+
+Copy
+Copied!
+Unfreezes a bucket.
+
+Delegate
+    self.send().delegate(address, bucket_id);
+
+Copy
+Copied!
+Delegates a bucket to a validator.
+
+Undelegate
+    self.send().undelegate(bucket_id);
+
+Copy
+Copied!
+Removes the delegation of a bucket.
+
+Withdraw
+   self.send().withdraw(withdraw_type, token, amount, currency);
+
+Copy
+Copied!
+Retrieves the assets from an unfrozen bucket or assets from KDAPool.
+
+Claim
+    self.send().kda_claim(claim_type, id);
+
+Copy
+Copied!
+Claims either staking rewards, delegation rewards, or expired marketplace orders.
+
+Create Marketplace Order
+    self.send().kda_create_marketplace_order(order_type, token, amount, price, expiration);
+
+Copy
+Copied!
+Asset Trigger
+Updates the properties or trigger functionalities of a fungible token, NFT/SFT collection, or a single NFT/SFT. See all types here.
+
+Mint: Directly mints assets in the target account. If the asset is a NFT, the minted nonces will be returned.
+    self.send.kda_mint(token, nonce, amount) -> ManagedVec<u64>;
+    //or
+    self.send.kda_mint_with_address(token, nonce, amount, address) -> ManagedVec<u64>;
+
+Copy
+Copied!
+Burn: Directly burns owned assets.
+    self.send.kda_burn(token, nonce, supply);
+
+Copy
+Copied!
+Wipe: Directly burns assets of the target account (asset owner only). Useful mostly for stablecoins.
+    self.send.kda_wipe(token, nonce, amount, address);
+
+Copy
+Copied!
+Pause: Pauses all transactions of the target asset.
+    self.send.kda_pause(token);
+
+Copy
+Copied!
+Resume: Resumes all transactions of the target asset.
+    self.send.kda_resume(token);
+
+Copy
+Copied!
+AddRole: Adds a permission role to the asset.
+    self.send.kda_add_role(token, address, has_role_mint,
+        has_role_set_ito_prices, has_role_deposit);
+
+Copy
+Copied!
+RemoveRole: Removes a permission role of the asset.
+    self.send.kda_remove_role(token, address);
+
+Copy
+Copied!
+UpdateMetadata: Updates the metadata of a given NFT.
+    self.sendkda_update_metadata(token, nonce, address, mime, metadata);
+
+Copy
+Copied!
+StopNFTMint: Stops all NFT mints for that asset (forever).
+    self.send().kda_stop_nft_mint(token);
+
+Copy
+Copied!
+UpdateLogo: Updates the asset's logo URI.
+    self.send().kda_update_logo(token, logo);
+
+Copy
+Copied!
+UpdateURIs: Updates the stored relevant URIs.
+    self.send().kda_update_uris(token, uris);
+
+Copy
+Copied!
+ChangeRoyaltiesReceiver: Changes the address that receives royalties.
+    self.send().kda_change_royalties_receiver(token, address);
+
+Copy
+Copied!
+ChangeOwner: Changes the owner of the asset.
+    self.send().kda_change_owner(token, address);
+
+Copy
+Copied!
+UpdateStaking: Updates staking parameters.
+    self.send()kda_update_staking( token, staking_type, apr,
+        min_epochs_to_claim, min_epochs_to_unstake, min_epochs_to_withdraw);
+
+Copy
+Copied!
+UpdateRoyalties: Updates royalties parameters.
+    self.send().kda_update_royalties(token, royalties);
+
+Copy
+Copied!
+UpdateKDAFeePool: Updates the KDA Fee Pool parameters. KDA Fee Pool is the system to pay fees with KDA other tha KLV.
+    self.send().kda_update_fee_pool(token, is_active, admin_address, f_ratio_kda, f_ratio_klv);
+
+Copy
+Copied!
+StopRoyaltiesChange: Stops the royalties changes, giving the co-owners more safety about the token's royalties.
+    self.send().kda_stop_royalties_change(token);
+
+Copy
+Copied!
+StopNFTMetadataChange: Stops NFT Metadata changes for a given collection.
+    self.send().kda_stop_metadata_change(token);
+
+Copy
+Copied!
+Set Account Name
+    self.send().set_account_name(name);
+
+Copy
+Copied!
+Defines a name for the account.
+
+Vote
+    self.send()vote(proposal_id, vote_type, amount);
+
+Copy
+Copied!
+Votes on an active proposal. The weight of the vote depends on the staked KFI of the sender address (The KFI is not consumed).
+
+Buy
+    self.send().buy(buy_type, id, currency, amount);
+
+Copy
+Copied!
+Creates a buy (or bid) order for a given market sell order.
+
+Sell
+    self.send().sell(sell_type, marketplace_id, nft_id, nft_nonce,
+        currency, price, reserve_price, end_time) -> ManagedBuffer;
+
+Copy
+Copied!
+Creates a sell order of a NFT in a marketplace. Returning the Order ID.
+
+Cancel Market Order
+    self.send().cancel_market_order(order_id);
+
+Copy
+Copied!
+Cancels a sell order.
+
+Create Marketplace
+    self.send().create_marketplace(name, referral_address,
+        referral_percentage) -> ManagedBuffer;
+
+Copy
+Copied!
+Creates a marketplace. Returning the Marketplace ID.
+
+Config Marketplace
+    self.send()config_marketplace(marketplace_id, name,
+        referral_address, referral_percentage);
+
+Copy
+Copied!
+Changes the parameters of a marketplace.
+
+Deposit
+    self.send()deposit(deposit_type, id, currency, amount);
+
+Copy
+Copied!
+Deposits an asset into a FPR pool or into an auto-swapping fee system.
+
+Config ITO
+    self.send()ito_config(token, receiver, status, max_amount,
+        default_limit_per_address, start_time, end_time, whitelist_status,
+            whitelist_start_time, whitelist_end_time, whitelist_info, packs);
+
+Copy
+Copied!
+Sets up an Initial Token Offering for either a token or a NFT collection.
+
+ITOTrigger
+Updates the properties of a ITO.
+
+SetITOPrices: Update ITOs packs prices.
+    self.send().ito_set_prices(token, packs);
+
+Copy
+Copied!
+UpdateStatus: Update ITO status (Active/Paused).
+    self.send().ito_update_status(token, status);
+
+Copy
+Copied!
+UpdateReceiverAddress: Update receiver address of the fees.
+    self.send().ito_update_receiver_address(token, receiver);
+
+Copy
+Copied!
+UpdateMaxAmount: Update max amount of minted NFTs.
+    self.send().ito_update_max_amount(token, max_amount);
+
+Copy
+Copied!
+UpdateDefaultLimitPerAddress: Update default limit of tokens per address in the whitelist, during the whitelist.
+    self.send().
+        ito_update_default_limit_per_address(token, default_limit_per_address);
+
+Copy
+Copied!
+UpdateTimes: Update start and end time of ITO.
+    self.send().ito_update_times(token, start_time, end_time);
+
+Copy
+Copied!
+UpdateWhitelistStatus: Update whitelist status (Active/Paused).
+    self.send().ito_update_whitelist_status(token, whitelist_status);
+
+Copy
+Copied!
+AddToWhitelist: Adds addresses to the whitelist.
+    self.send().ito_add_to_whitelist(token, whitelist_info);
+
+Copy
+Copied!
+RemoveFromWhitelist: Remove addresses from the whitelist.
+    self.send().ito_remove_from_whitelist(token, whitelist_info);
+
+Copy
+Copied!
+UpdateWhitelistTimes: Update start and end time of the whitelist.
+    self.send().
+        ito_update_whitelist_times(token, whitelist_start_time, whitelist_end_time);
+
+How to Upgrade a Smart Contract
+Upgrading a smart contract is quite simple, although the effects might not be very clear. Just run this command to upgrade it:
+
+Warning: Before running the following Docker commands, you'll need to change the ownership of your local files to user ID 999: chown -R 999 .
+
+docker run -it --rm \
+    -v $(pwd):/opt/klever-blockchain \
+    --network=host \
+    --entrypoint=/usr/local/bin/operator \
+    kleverapp/klever-go:latest  --key-file=KEY_FILE \
+    sc upgrade SC_ADDRESS --wasm=WASM_PATH \
+     --args example --payable --payableBySC --readable --upgradeable
+
+Copy
+Copied!
+Replace SC_ADDRESS, KEY_FILE and WASM_PATH accordingly. If needs arguments, add --args VALUE.
+
+Check your flags --payable --payableBySC --readable --upgradeable to make sure they are correct.
+
+The Rust framework provides a wrapper over the Klever VM API functions and over account-level built-in functions. They are split into multiple modules, grouped by category:
+
+BlockchainApi: Provides general blockchain information, which ranges from account balances, NFT metadata/roles to information about the current and previous block (nonce, epoch, etc.)
+CallValueApi: Used in payable endpoints, providing information about the tokens received as payment (token type, nonce, amount)
+CryptoApi: Provides support for cryptographic functions like hashing and signature checking
+SendApi: Handles all types of transfers to accounts and smart contract calls/deploys/upgrades, as well as support for KDA local built-in functions
+The base trait for the APi is: https://docs.rs/klever-sc/0.43.3/klever_sc/api/trait.VMApi.html
+
+The source code for the APIs can be found here: https://github.com/klever-io/klever-vm-sdk-rs/tree/master/framework/base/src/api
+
+Blockchain API
+This API is accessible through self.blockchain(). Available functions:
+
+get_sc_address
+get_sc_address() -> ManagedAddress
+
+Copy
+Copied!
+Returns the smart contract's own address.
+
+get_owner_address
+get_owner_address() -> ManagedAddress
+
+Copy
+Copied!
+Returns the owner's address.
+
+check_caller_is_owner
+check_caller_is_owner()
+
+Copy
+Copied!
+Terminates the execution and signals an error if the caller is not the owner.
+
+Use #[only_owner] endpoint annotation instead of directly calling this function.
+
+get_shard_of_address
+get_shard_of_address(address: &ManagedAddress) -> u32
+
+Copy
+Copied!
+Returns the shard of the address passed as argument.
+
+is_smart_contract
+is_smart_contract(address: &ManagedAddress) -> bool
+
+Copy
+Copied!
+Returns true if the address passed as parameter is a Smart Contract address, false for simple accounts.
+
+get_caller
+get_caller() -> ManagedAddress
+
+Copy
+Copied!
+Returns the current caller.
+
+Keep in mind that for SC Queries, this function will return the SC's own address, so having a view function that uses this API function will not have the expected behaviour.
+
+get_balance
+get_balance(address: &ManagedAddress) -> BigUint
+
+Copy
+Copied!
+Returns the KLV balance of the given address.
+
+This only works for addresses that are in the same shard as the smart contract.
+
+get_sc_balance
+get_sc_balance(token: &KlvOrKdaTokenIdentifier, nonce: u64) -> BigUint
+
+Copy
+Copied!
+Returns the KLV/KDA/NFT balance of the smart contract.
+
+For fungible KDA, nonce should be 0. To get the KLV balance, you can simply pass KlvOrKdaTokenIdentifier::klv() as parameter.
+
+get_tx_hash
+get_tx_hash() -> ManagedByteArray<Self::Api, 32>
+
+Copy
+Copied!
+Returns the current tx hash.
+
+get_gas_left
+get_gas_left() - > u64
+
+Copy
+Copied!
+Returns the remaining gas, at the time of the call.
+
+This is useful for expensive operations, like iterating over an array of users in storage and sending rewards.
+
+A smart contract call that runs out of gas will revert all operations, so this function can be used to return before running out of gas, saving a checkpoint, and continuing on a second call.
+
+get_block_timestamp
+get_block_timestamp() -> u64
+
+Copy
+Copied!
+get_block_nonce
+get_block_nonce() -> u64
+
+Copy
+Copied!
+get_block_round
+get_block_round() -> u64
+
+Copy
+Copied!
+get_block_epoch
+get_block_epoch() -> u64
+
+Copy
+Copied!
+These functions are mostly used for setting up deadlines, so they've been grouped together.
+
+get_block_random_seed
+get_block_random_seed() -> ManagedByteArray<Self::Api, 48>
+
+Copy
+Copied!
+Returns the block random seed, which can be used for generating random numbers.
+
+This will be the same for all the calls in the current block, so it can be predicted by someone calling this at the start of the round and only then calling your contract.
+
+get_prev_block_timestamp
+get_prev_block_timestamp() -> u64
+
+Copy
+Copied!
+get_prev_block_nonce
+get_prev_block_nonce() -> u64
+
+Copy
+Copied!
+get_prev_block_round
+get_prev_block_round() -> u64
+
+Copy
+Copied!
+get_prev_block_epoch
+get_prev_block_epoch() -> u64
+
+Copy
+Copied!
+get_prev_block_random_seed
+get_prev_block_random_seed() -> ManagedByteArray<Self::Api, 48>
+
+Copy
+Copied!
+The same as the functions above, but for the previous block instead of the current block.
+
+get_current_kda_nft_nonce
+get_current_kda_nft_nonce(address: &ManagedAddress, token_id: &TokenIdentifier) -> u64
+
+Copy
+Copied!
+Gets the last nonce for an SFT/NFT. Nonces are incremented after every KDANFTCreate operation.
+
+This only works for accounts that have the KDANFTCreateRole set and only for accounts in the same shard as the smart contract.
+
+This function is usually used with self.blockchain().get_sc_address() for smart contracts that create SFT/NFTs themselves.
+
+get_kda_balance
+get_kda_balance(address: &ManagedAddress, token_id: &TokenIdentifier, nonce: u64) -> BigUint
+
+Copy
+Copied!
+Gets the KDA/SFT/NFT balance for the specified address.
+
+This only works for addresses that are in the same shard as the smart contract.
+
+For fungible KDA, nonce should be 0. For KLV balance, use the get_balance instead.
+
+get_kda_token_data
+get_kda_token_data(address: &ManagedAddress, token_id: &TokenIdentifier, nonce: u64) -> KdaTokenData<Self::Api>
+
+Copy
+Copied!
+Gets the KDA token properties for the specific token type, owned by the specified address.
+
+KdaTokenData has the following format:
+
+pub struct KdaTokenData<M: ManagedTypeApi> {
+    pub token_type: KdaTokenType,
+    pub amount: BigUint<M>,
+    pub frozen: bool,
+    pub hash: ManagedBuffer<M>,
+    pub name: ManagedBuffer<M>,
+    pub attributes: ManagedBuffer<M>,
+    pub creator: ManagedAddress<M>,
+    pub royalties: BigUint<M>,
+    pub uris: ManagedVec<M, ManagedBuffer<M>>,
+}
+
+Copy
+Copied!
+token_type is an enum, which can have one of the following values:
+
+pub enum KdaTokenType {
+    Fungible,
+    NonFungible,
+    SemiFungible,
+    Meta,
+    Invalid,
+}
+
+Copy
+Copied!
+You will only receive basic distinctions for the token type, i.e. only Fungible and NonFungible (The smart contract has no way of telling the difference between non-fungible, semi-fungible and meta tokens).
+
+amount is the current owned balance of the account.
+
+frozen is a boolean indicating if the account is frozen or not.
+
+hash is the hash of the NFT. Generally, this will be the hash of the attributes, but this is not enforced in any way. Also, the hash length is not fixed either.
+
+name is the name of the NFT, often used as display name in front-end applications.
+
+attributes can contain any user-defined data. If you know the format, you can use the KdaTokenData::decode_attributes method to deserialize them.
+
+creator is the creator's address.
+
+royalties a number between 0 and 10,000, meaning a percentage of any selling price the creator receives. This is used in the KDA NFT marketplace, but is not enforced in any other way. (The way these percentages work is 5,444 would be 54.44%, which you would calculate: price * 5,444 / 10,000. This convention is used to grant some additional precision)
+
+uris list of URIs to an image/audio/video, which represents the given NFT.
+
+This only works for addresses that are in the same shard as the smart contract.
+
+Most of the time, this function is used with self.blockchain().get_sc_address() as address to get the properties of a token that is owned by the smart contract, or was transferred to the smart contract in the current executing call.
+
+get_kda_local_roles
+get_kda_local_roles(token_id: &TokenIdentifier) -> KdaLocalRoleFlags
+
+Copy
+Copied!
+Gets the KDALocalRoles set for the smart contract, as a bitflag. The returned type contains methods of checking if a role exists and iterating over all the roles.
+
+This is done by simply reading protected storage, but this is a convenient function to use.
+
+Call Value API
+This API is accessible through self.call_value(). The alternative is to use the #[payment] annotations, but we no longer recommend them. They have a history of creating confusion, especially for new users.
+
+Available functions:
+
+klv_value
+klv_value() -> BigUint
+
+Copy
+Copied!
+Returns the amount of KLV transferred in the current transaction. Will return 0 for KDA transfers.
+
+all_kda_transfers
+all_kda_transfers() -> ManagedVec<KdaTokenPayment>
+
+Copy
+Copied!
+Returns all KDA transfers. Useful when you're expecting a variable number of transfers.
+
+Returns the payments into a ManagedVec of structs, that contain the token type, token ID, token nonce and the amount being transferred:
+
+pub struct KdaTokenPayment<M: ManagedTypeApi> {
+    pub token_identifier: TokenIdentifier<M>,
+    pub token_nonce: u64,
+    pub amount: BigUint<M>,
+}
+
+Copy
+Copied!
+multi_kda
+multi_kda<const N: usize>() -> [KdaTokenPayment; N]
+
+Copy
+Copied!
+Returns a fixed number of KDA transfers as an array. Will signal an error if the number of KDA transfers differs from N.
+
+For example, if you always expect exactly 3 payments in your endpoint, you can use this function like so:
+let [payment_a, payment_b, payment_c] = self.call_value().multi_kda();
+
+single_kda
+single_kda() -> KdaTokenPayment
+
+Copy
+Copied!
+Returns the received KDA token payment if exactly one was received. Will signal an error in case of multi-transfer or no transfer.
+
+single_fungible_kda
+single_fungible_kda(&self) -> (TokenIdentifier, BigUint)
+
+Copy
+Copied!
+Similar to the function above, but also enforces the payment to be a fungible KDA.
+
+klv_or_single_fungible_kda
+klv_or_single_fungible_kda(&self) -> (KlvOrKdaTokenIdentifier, BigUint)
+
+Copy
+Copied!
+Same as the function above, but also allows KLV to be received.
+
+klv_or_single_kda
+klv_or_single_kda() -> KlvOrKdaTokenPayment
+
+Copy
+Copied!
+Allows KLV or any single KDA token to be received.
+
+Crypto API
+This API is accessible through self.crypto(). It provides hashing functions and signature verification. Since those functions are widely known and have their own pages of documentation, we will not go into too much detail in this section.
+
+Hashing functions:
+
+sha256
+sha256(data: &ManagedBuffer) -> ManagedByteArray<Self::Api, 32>
+
+Copy
+Copied!
+keccak256
+keccak256(data: &ManagedBuffer) -> ManagedByteArray<Self::Api, 32>
+
+Copy
+Copied!
+ripemd160
+ripemd160(data: &ManagedBuffer) -> ManagedByteArray<Self::Api, 20>
+
+Copy
+Copied!
+Signature verification functions:
+
+verify_ed25519_legacy_managed
+verify_ed25519_legacy_managed<const MAX_MESSAGE_LEN: usize>(key: &ManagedByteArray<Self::Api, 32>, message: &ManagedBuffer, signature: &ManagedByteArray<Self::Api, 64>) -> bool
+
+Copy
+Copied!
+verify_bls
+verify_bls(key: &[u8], message: &[u8], signature: &[u8]) -> bool
+
+Copy
+Copied!
+verify_secp256k1
+verify_secp256k1(key: &[u8], message: &[u8], signature: &[u8]) -> bool
+
+Copy
+Copied!
+verify_custom_secp256k1
+verify_custom_secp256k1(key: &[u8], message: &[u8], signature: &[u8], hash_type: MessageHashType) -> bool
+
+Copy
+Copied!
+MessageHashType is an enum, representing the hashing algorithm that was used to create the message argument. Use ECDSAPlainMsg if the message is in "plain text".
+
+pub enum MessageHashType {
+    ECDSAPlainMsg,
+    ECDSASha256,
+    ECDSADoubleSha256,
+    ECDSAKeccak256,
+    ECDSARipemd160,
+}
+
+Copy
+Copied!
+To be able to use the hashing functions without dynamic allocations, we use a concept in Rust known as const generics. This allows the function to have a constant value as a generic instead of the usual trait types you'd see in generics. The value is used to allocate a static buffer in which the data is copied temporarily, to then be passed to the legacy API.
+
+To call such a function, the call would look like this:
+
+let hash = self.crypto().sha256_legacy_managed::<200>(&data);
+
+Copy
+Copied!
+Where 200 is the max expected byte length of data.
+
+encode_secp256k1_der_signature
+encode_secp256k1_der_signature(r: &[u8], s: &[u8]) -> BoxedBytes
+
+Copy
+Copied!
+Creates a signature from the corresponding elliptic curve parameters provided.
+
+Send API
+This API is accessible through self.send(). It provides functionalities like sending tokens, performing smart contract calls, calling built-in functions and much more.
+
+We will not describe every single function in the API, as that would create confusion. We will only describe those that are recommended to be used (as they're mostly wrappers around more complicated low-level functions).
+
+For Smart Contract to Smart Contract calls, use the Proxies, as described in the contract calls section.
+
+Without further ado, let's take a look at the available functions:
+
+direct
+direct(to: &ManagedAddress, token: &KlvOrKdaTokenIdentifier, nonce: u64, amount: &BigUint)
+
+Copy
+Copied!
+Performs a simple KLV/KDA/NFT transfer to the target address, with some optional additional data. If you want to send KLV, simply pass KlvOrKdaTokenIdentifier::klv(). For both KLV and fungible KDA, nonce should be 0.
+
+This will fail if the destination is a non-payable smart contract, but the current executing transaction will only fail if the destination SC is in the same shard, and as such, any changes done to the storage will persist. The tokens will not be lost though, as they will be automatically returned.
+
+Even though an invalid destination will not revert, an illegal transfer will return an error and revert. An illegal transfer is any transfer that would leave the SC with a negative balance for the specific token.
+
+If you're unsure about the destination's account type, you can use the is_smart_contract function from Blockchain API.
+
+If you need a bit more control, use the direct_with_gas_limit function instead.
+
+direct_klv
+direct_klv(to: &ManagedAddress, amount: &BigUint)
+
+Copy
+Copied!
+The KLV-transfer version for the direct function.
+
+direct_kda
+direct_kda(to: &ManagedAddress, token_id: &TokenIdentifier, token_nonce: u64, amount: &BigUint)
+
+Copy
+Copied!
+The KDA-only version for the direct function. Used so you don't have to wrap TokenIdentifier into an KlvOrKdaTokenIdentifier.
+
+direct_multi
+direct_multi(to: &ManagedAddress, payments: &ManagedVec<KdaTokenPayment>)
+
+Copy
+Copied!
+The multi-transfer version for the direct_kda function. Keep in mind you cannot transfer KLV with this function, only KDAs.
+
+change_owner_address
+change_owner_address(child_sc_address: &ManagedAddress, new_owner: &ManagedAddress)
+
+Copy
+Copied!
+Changes the ownership of target child contract to another address. This will fail if the current contract is not the owner of the child_sc_address contract.
+
+This also has the implication that the current contract will not be able to call #[only_owner] functions of the child contract, upgrade, or change owner again.
+
+kda_local_mint
+kda_local_mint(token: &TokenIdentifier, nonce: u64, amount: &BigUint)
+
+Copy
+Copied!
+Allows synchronous minting of KDA/SFT (depending on nonce). Execution is resumed afterwards. Note that the SC must have the KDALocalMint or KDANftAddQuantity roles set, or this will fail with "action is not allowed".
+
+For SFTs, you must use kda_nft_create before adding additional quantity.
+
+This function cannot be used for NFTs.
+
+kda_local_burn
+kda_local_burn(token: &TokenIdentifier, nonce: u64, amount: &BigUint)
+
+Copy
+Copied!
+The inverse operation of kda_local_mint, which permanently removes the tokens. Note that the SC must have the KDALocalBurn or KDANftBurn roles set, or this will fail with "action is not allowed".
+
+Unlike the mint function, this can be used for NFTs.
+
+kda_nft_create
+kda_nft_create<T: TopEncode>(token: &TokenIdentifier, amount: &BigUint, name: &ManagedBuffer, royalties: &BigUint, hash: &ManagedBuffer, attributes: &T, uris: &ManagedVec< ManagedBuffer>) -> u64
+
+Copy
+Copied!
+Creates a new SFT/NFT, and returns its nonce.
+
+Must have KDANftCreate role set, or this will fail with "action is not allowed".
+
+token is identifier of the SFT/NFT brand.
+
+amount is the amount of tokens to be minted. For NFTs, this should be "1".
+
+name is the display name of the token, which will be used in explorers, marketplaces, etc.
+
+royalties is a number between 0 and 10,000, which represents the percentage of any selling amount the creator receives. This representation is used to be able to have more precision. For example, a percentage like 55.66% is stored as 5566. These royalties are not enforced, and will mostly be used in "official" NFT marketplaces.
+
+hash is a user-defined hash for the token. Recommended value is sha256(attributes), but it can be anything.
+
+attributes can be any serializable user-defined struct, more specifically, any type that implements the TopEncode trait. There is no real standard for attributes format at the point of writing this document, but that might change in the future.
+
+uris is a list of links to the NFTs visual/audio representation, most of the time, these will be links to images, videos or songs. If empty, the framework will automatically add an "empty" URI.
+
+kda_nft_create_compact
+kda_nft_create_compact<T: TopEncode>(token: &TokenIdentifier, amount: &BigUint, attributes: &T) -> u64
+
+Copy
+Copied!
+Same as kda_nft_create, but fills most arguments with default values. Mostly used in contracts that use NFTs as a means of information rather than for display purposes.
+
+sell_nft
+sell_nft(nft_id: &TokenIdentifier, nft_nonce: u64, nft_amount: &BigUint, buyer: &ManagedAddress, payment_token: &KlvOrKdaTokenIdentifier, payment_nonce: u64, payment_amount: &BigUint) -> BigUint
+
+Copy
+Copied!
+Sends the SFTs/NFTs to target address, while also automatically calculating and sending NFT royalties to the creator. Returns the amount left after deducting royalties.
+
+(nft_id, nft_nonce, nft_amount) are the SFTs/NFTs that are going to be sent to the buyer address.
+
+(payment_token, payment_nonce, payment_amount) are the tokens that are used to pay the creator royalties.
+
+This function's purpose is mostly to be used in marketplace-like smart contracts, where the contract sells NFTs to users.
+
+nft_add_uri
+nft_add_uri(token_id: &TokenIdentifier, nft_nonce: u64, new_uri: ManagedBuffer)
+
+Copy
+Copied!
+Adds an URI to the selected NFT. The SC must own the NFT and have the KDARoleNFTAddURI to be able to use this function.
+
+If you need to add multiple URIs at once, you can use nft_add_multiple_uri function, which takes a ManagedVec<ManagedBuffer> as argument instead.
+
+nft_update_attributes
+nft_update_attributes<T: TopEncode>(token_id: &TokenIdentifier, nft_nonce: u64, new_attributes: &T)
+
+Copy
+Copied!
+Updates the attributes of the selected NFT to the provided value. The SC must own the NFT and have the KDARoleNFTUpdateAttributes to be able to update the attributes.
+
+Conclusion
+While there are still other various APIs in klever-sc, they are mostly hidden from the user. These are the ones you're going to be using in your day-to-day smart contract development.
+
+Rust Storage Mappers
+The Rust framework provides various storage mappers to manage data storage in smart contracts. Choosing the right storage mapper for each situation is crucial for optimizing performance. In this guide, we'll describe different storage mappers and provide comparisons to help you make informed decisions.
+
+General Purpose Mappers
+SingleValueMapper
+The SingleValueMapper is used to store a single value. Here are some examples:
+
+fn single_value(&self) -> SingleValueMapper<Type>;
+fn single_value_with_single_key_arg(&self, key_arg: Type1) -> SingleValueMapper<Type2>;
+fn single_value_with_multi_key_arg(&self, key_arg1: Type1, key_arg2: Type2) -> SingleValueMapper<Type3>;
+
+Copy
+Copied!
+Keep in mind that there's no way to iterate over all key_args, so if you need to do so, consider using another mapper.
+
+Available methods:
+get: Reads the value from storage and deserializes it to the given Type.
+set: Sets the stored value to the provided value argument.
+is_empty: Returns true if the storage entry is empty.
+set_if_empty: Sets the value only if the storage for that value is currently empty.
+clear: Clears the entry.
+update: Takes a closure as an argument, applies that closure to the currently stored value, saves the new value, and returns any value the given closure might return.
+raw_byte_length: Returns the raw byte length of the stored value.
+VecMapper
+The VecMapper stores elements of the same type, each under their own storage key. It allows access by index for these items. Examples:
+
+fn my_vec(&self) -> VecMapper<Type>;
+fn my_vec_with_args(&self, arg: Type1) -> VecMapper<Type2>;
+
+Copy
+Copied!
+Available methods:
+push: Stores the element at index len and increments len afterward.
+get: Gets the element at the specific index.
+set: Sets the element at the given index.
+clear_entry: Clears the entry at the given index.
+is_empty: Returns true if the mapper has no elements stored.
+len: Returns the number of items stored in the mapper.
+extend_from_slice: Pushes all elements from the given slice at the end of the mapper.
+swap_remove: Removes the element at index, moves the last element to index and decreases the len by 1.
+clear: Clears all the elements from the mapper.
+iter: Provides an iterator over all the elements.
+SetMapper
+The SetMapper stores a set of values, with no duplicates allowed. It also provides methods for checking if a value already exists in the set. Values are ordered by their order of insertion.
+
+Examples:
+fn my_set(&self) -> SetMapper<Type>;
+
+Copy
+Copied!
+Available methods:
+insert: Inserts the value into the set. Returns false if the item was already present.
+remove: Removes the value from the set. Returns false if the set did not contain the value.
+contains: Returns true if the mapper contains the given value.
+is_empty: Returns true if the mapper has no elements stored.
+len: Returns the number of items stored in the mapper.
+clear: Clears all the elements from the mapper.
+iter: Returns an iterator over all the stored elements.
+UnorderedSetMapper
+The UnorderedSetMapper is similar to SetMapper, but it does not guarantee the order of the items. It is more efficient than SetMapper and should be used instead unless you need to maintain the order. It uses a VecMapper internally to store the elements and provides O(1) contains.
+
+Examples:
+fn my_set(&self) -> UnorderedSetMapper<Type>;
+
+Copy
+Copied!
+Available methods:
+swap_remove: Uses the internal VecMapper's swap_remove method to remove the element. Returns false if the element was not present in the set.
+WhitelistMapper
+The WhitelistMapper stores a whitelist of items and does not provide means of iterating over the elements. If you need to iterate over the elements, use UnorderedSetMapper instead. It simply stores a flag in storage for each item if they're whitelisted.
+
+Examples:
+fn my_whitelist(&self) -> WhitelistMapper<Type>
+
+Copy
+Copied!
+Available methods:
+add: Adds the value to the whitelist.
+remove: Removes the value from the whitelist.
+contains: Returns true if the mapper contains the given value.
+require_whitelisted: Signals an error if the item is not whitelisted.
+LinkedListMapper
+The LinkedListMapper stores a linked list, allowing fast insertion/removal of elements and the possibility to iterate over the entire list.
+
+Examples:
+fn my_linked_list(&self) -> LinkedListMapper<Type>
+
+Copy
+Copied!
+Available methods:
+is_empty: Returns true if the mapper has no elements stored.
+len: Returns the number of items stored in the mapper.
+clear: Clears all the elements from the mapper.
+iter: Returns an iterator over all the stored elements.
+iter_from_node_id: Returns an iterator starting from the given node_id.
+front/back: Returns the first/last element if the list is not empty.
+pop_front/pop_back: Removes and returns the first/last element from the list.
+push_after/push_before: Inserts the given element into the list after/before the given node.
+push_after_node_id/push_before_node_id: Inserts the given element after/before the node with the given node_id.
+push_front/push_back: Pushes the given element at the front/back of the list.
+set_node_value/set_node_value_by_id: Sets a node's value.
+remove_node/remove_node_by_id: Removes the node from the list.
+MapMapper
+The MapMapper stores (key, value) pairs and allows iteration over keys. This is the most expensive mapper to use. Keys are ordered by their order of insertion.
+
+Examples:
+fn my_map(&self) -> MapMapper<KeyType, ValueType>
+
+Copy
+Copied!
+Available methods:
+is_empty: Returns true if the mapper has no elements stored.
+len: Returns the number of items stored in the mapper.
+contains_key: Returns true if the mapper contains the given key.
+get: Returns Some(value) if the key exists, None if the key does not exist.
+insert: Inserts the given key, value pair into the map and returns Some(old_value) if the key was already present.
+remove: Removes the key and the corresponding value from the map and returns the value.
+keys/values/iter: Provides an iterator over all
+keys, values, and (key, value) pairs, respectively.
+
+Specialized Mappers
+UniqueIdMapper
+The UniqueIdMapper holds values from 1 to N with a special property: if mapper[i] == i, then nothing is actually stored. This makes initialization O(1) instead of O(N), making it useful for maintaining a list of available IDs.
+
+Examples:
+fn my_id_mapper(&self) -> UniqueIdMapper<Self::Api>
+
+Copy
+Copied!
+Available methods:
+set_initial_len: Sets the initial mapper length.
+is_empty: Returns true if the mapper has no elements stored.
+len: Returns the number of items stored in the mapper.
+get: Gets the value for the given index.
+set: Sets the value at the given index.
+swap_remove: Removes the ID at the given index and returns it.
+iter: Provides an iterator over all the IDs.
+Comparisons between Different Mappers
+SingleValueMapper vs Old Storage Set/Get Pairs
+There is no difference between SingleValueMapper and the old-school setters/getters. SingleValueMapper is a more compact and efficient option.
+
+SingleValueMapper vs VecMapper
+Use SingleValueMapper when you need to read the whole array on every use or the array is expected to be of small length. Use VecMapper when you require reading a part of the array or the encoding of T is more efficient with VecMapper.
+
+VecMapper vs SetMapper
+Use SetMapper when you need to store a whitelist of values efficiently, as it provides O(1) value checking. Avoid using VecMapper for such cases, as it can be inefficient.
+
+VecMapper vs LinkedListMapper
+LinkedListMapper is a specialized version of VecMapper that allows fast insertion/removal at both ends and efficient iteration. It is suitable for storing queues or ordered lists.
+
+SingleValueMapper vs MapMapper
+Avoid using MapMapper unless you need to iterate over all the entries, as it is the most expensive mapper in terms of gas costs. SingleValueMapper is more efficient and suitable for most cases.
+
+Always choose the right mapper for your specific use-case to optimize gas costs and complexity.
+
+FungibleTokenMapper
+Stores a token identifier (like a SingleValueMapper<TokenIdentifier>) and provides methods for using this token ID directly with the most common API functions. Note that most method calls will fail if the token was not issued previously.
+
+Examples:
+
+rust fn my_token_id(&self) -> FungibleTokenMapper
+
+Available methods:
+
+issue
+fn issue( &mut self, token_display_name: &ManagedBuffer<SA>, token_ticker: &ManagedBuffer<SA>, initial_supply: &BigUint<SA>, max_supply: &BigUint<SA>, num_decimals: u32) -> TokenIdentifier<SA>
+
+Copy
+Copied!
+Issues a new fungible token. issue_cost is 0.05 KLV (5000000000000000) at the time of writing this, but since this changed in the past, we've let it as an argument it case it changes again in the future.
+
+This mapper allows only one issue, so trying to issue multiple types will signal an error.
+
+mint
+rust fn mint(amount: BigUint) -> KdaTokenPayment
+
+Mints amount tokens for the stored token ID, using the KDALocalMint built-in function. Returns a payment struct, containing the token ID and the given amount.
+
+mint_and_send
+rust fn mint_and_send(to: &ManagedAddress, amount: BigUint) -> KdaTokenPayment<SA>
+
+Same as the method above, but also sends the minted tokens to the given address.
+
+burn
+rust fn burn(amount: &BigUint)
+
+Burns amount tokens, using the KDALocalBurn built-in function.
+
+get_balance
+rust fn get_balance() -> BigUint
+
+Gets the current balance the SC has for the token.
+
+NonFungibleTokenMapper
+Similar to the FungibleTokenMapper, but is used for NFT, SFT and META-Kda tokens.
+
+fn nft_create<T: TopEncode>(amount: BigUint, attributes: &T) -> KdaTokenPayment
+
+fn nft_create_named<T: TopEncode>(amount: BigUint, name: &ManagedBuffer, attributes: &T) -> KdaTokenPayment
+
+Copy
+Copied!
+Creates an NFT (optionally with a display name) and returns the token ID, the created token's nonce, and the given amount in a payment struct.
+
+nft_create_and_send/nft_create_and_send_named
+fn nft_create_and_send<T: TopEncode>(to: &ManagedAddress, amount: BigUint, attributes: &T,) -> KdaTokenPayment
+
+fn nft_create_and_send_named<T: TopEncode>(to: &ManagedAddress, amount: BigUint, name: &ManagedBuffer, attributes: &T,) -> KdaTokenPayment
+
+Copy
+Copied!
+Same as the methods above, but also sends the created token to the provided address.
+
+nft_add_quantity
+rust fn nft_add_quantity(token_nonce: u64, amount: BigUint) -> KdaTokenPayment
+
+Adds quantity for the given token nonce. This can only be used if one of the nft_create functions was used before AND the SC holds at least 1 token for the given nonce.
+
+nft_add_quantity_and_send
+rust fn nft_add_quantity_and_send(to: &ManagedAddress, token_nonce: u64, amount: BigUint) -> KdaTokenPayment
+
+Same as the method above, but also sends the tokens to the provided address.
+
+nft_burn
+rust fn nft_burn(token_nonce: u64, amount: &BigUint)
+
+Burns amount tokens for the given nonce.
+
+get_all_token_data
+rust fn get_all_token_data(token_nonce: u64) -> KdaTokenData<Self::Api>
+
+Gets all the token data for the given nonce. The SC must own the given nonce for this function to work.
+
+KdaTokenData contains the following fields:
+
+rust pub struct KdaTokenData<M: ManagedTypeApi> { pub token_type: KdaTokenType, pub amount: BigUint<M>, pub frozen: bool, pub hash: ManagedBuffer<M>, pub name: ManagedBuffer<M>, pub attributes: ManagedBuffer<M>, pub creator: ManagedAddress<M>, pub royalties: BigUint<M>, pub uris: ManagedVec<M, ManagedBuffer<M>>, }
+
+get_balance
+rust fn get_balance(token_nonce: u64) -> BigUint
+
+Gets the SC's balance for the given token nonce.
+
+get_token_attributes
+rust fn get_token_attributes<T: TopDecode>(token_nonce: u64) -> T
+
+Gets the attributes for the given token nonce. The SC must own the given nonce for this function to work.
+
+Common functions for FungibleTokenMapper and NonFungibleTokenMapper
+Both mappers work similarly, so some functions have the same implementation for both.
+
+is_empty
+rust fn is_empty() -> bool
+
+Returns true if the token ID is not set yet.
+
+get_token_id
+rust fn get_token_id() -> TokenIdentifier<SA>
+
+Gets the stored token ID.
+
+set_token_id
+rust fn set_token_id(token_id: &TokenIdentifier)
+
+Manually sets the token ID for this mapper. This can only be used once, and can not be overwritten afterwards. This will fail if the token was issue previously, as the token ID was automatically set.
+
+require_same_token/require_all_same_token
+rust fn require_same_token(expected_token_id: &TokenIdentifier) fn require_all_same_token(payments: &ManagedVec<KdaTokenPayment>)
+
+Will signal an error if the provided token ID argument(s) differs from the stored token. Useful in #[payable] methods when you only want to this token as payment.
+
+Rust Testing Framework for Smart Contracts
+The Rust testing framework was developed as an alternative to manually writing scenario tests. This comes with many advantages:
+
+Being able to calculate values using variables
+Type checking
+Automatic serialization
+Far less verbosity
+Semi-automatic generation of scenario tests
+The only disadvantage is that you need to learn something new! Jokes aside, keep in mind that this whole framework runs in a mocked environment. So while you get powerful testing and debugging tools, you are ultimately running a mock and have no guarantee that the contract will work identically with the current VM version deployed on the mainnet.
+
+This is where the scenario generation part comes into play. The Rust testing framework allows you to generate scenarios with minimal effort, and then run said scenarios with one click through our Klever VSCode extension (alternatively, simply run erdpy contract test). There will be a bit of manual effort required on the developer's part, but we'll get to that in its specific section.
+
+Please note that scenario generation is more of an experiment rather than a fully-fledged implementation, which we might even remove in the future. Still, some examples are provided here if you still wish to attempt it.
+
+Prerequisites
+To get started, you need to have the latest klever-sc version (at the time of writing this, the latest version is 0.39.0). You can check the latest version here.
+
+Add klever-sc-scenario and required packages as dev-dependencies in your Cargo.toml:
+
+[dev-dependencies.klever-sc-scenario]
+version = "0.39.0"
+
+[dev-dependencies]
+num-bigint = "0.4.2"
+num-traits = "0.2"
+hex = "0.4"
+
+Copy
+Copied!
+For this tutorial, we're going to use the crowdfunding SC, so it might be handy to have it open or clone the repository: Crowdfunding SC Repository
+
+You also need to create a tests and a scenarios folder in your contract. Create a .rs file in your tests folder.
+
+In your newly created test file, add the following code (adapt the crowdfunding_kda namespace, the struct/variable names, and the contract wasm path according to your contract):
+
+use crowdfunding_kda::*;
+use klever_sc::{
+    sc_error,
+    types::{Address, SCResult},
+};
+use klever_sc_scenario::{
+    managed_address, managed_biguint, managed_token_id, rust_biguint, whitebox::*,
+    DebugApi,
+};
+
+const WASM_PATH: &'static str = "crowdfunding-kda/output/crowdfunding-kda.wasm";
+
+struct CrowdfundingSetup<CrowdfundingObjBuilder>
+where
+    CrowdfundingObjBuilder:
+        'static + Copy + Fn() -> crowdfunding_kda::ContractObj<DebugApi>,
+{
+    pub blockchain_wrapper: BlockchainStateWrapper,
+    pub owner_address: Address,
+    pub first_user_address: Address,
+    pub second_user_address: Address,
+    pub cf_wrapper:
+        ContractObjWrapper<crowdfunding_kda::ContractObj<DebugApi>, CrowdfundingObjBuilder>,
+}
+
+Copy
+Copied!
+The CrowdfundingSetup struct isn't really needed, but it helps deduplicate some code. You may add other fields to your struct if needed, but for now, this is enough for our use-case. The only fields you'll need for any contract are blockchain_wrapper and cf_wrapper. The rest of the fields can be adapted according to your test scenario.
+
+And that's all you need to get started.
+
+Writing Your First Test
+The first test you need to write is the one simulating the deployment of your smart contract. For that, you need a user address and a contract address. Then you simply call the init function of the smart contract.
+
+Since we're going to be using the same token ID everywhere, let's add it as a constant (and while we're at it, have the deadline as a constant as well):
+
+const CF_TOKEN_ID: &[u8] = b"CROWD-123456";
+const CF_DEADLINE: u64 = 7 * 24 * 60 * 60; // 1 week in seconds
+
+Copy
+Copied!
+Let's create our initial setup:
+
+fn setup_crowdfunding<CrowdfundingObjBuilder>(
+    cf_builder: CrowdfundingObjBuilder,
+) -> CrowdfundingSetup<CrowdfundingObjBuilder>
+where
+    CrowdfundingObjBuilder: 'static + Copy + Fn() -> crowdfunding_kda::ContractObj<DebugApi>,
+{
+    let rust_zero = rust_biguint!(0u64);
+    let mut blockchain_wrapper = BlockchainStateWrapper::new();
+    let owner_address = blockchain_wrapper.create_user_account(&rust_zero);
+    let first_user_address = blockchain_wrapper.create_user_account(&rust_zero);
+    let second_user_address = blockchain_wrapper.create_user_account(&rust_zero);
+    let cf_wrapper = blockchain_wrapper.create_sc_account(
+        &rust_zero,
+        Some(&owner_address),
+        cf_builder,
+        WASM_PATH,
+    );
+
+    blockchain_wrapper.set_kda_balance(&first_user_address, CF_TOKEN_ID, &rust_biguint!(1_000));
+    blockchain_wrapper.set_kda_balance(&second_user_address, CF_TOKEN_ID, &rust_biguint!(1_000));
+
+    blockchain_wrapper
+        .execute_tx(&owner_address, &cf_wrapper, &rust_zero, |sc| {
+            let target = managed_biguint!(2_000);
+            let token_id = managed_token_id!(CF_TOKEN_ID);
+
+            sc.init(target, CF_DEADLINE, token_id);
+        })
+        .assert_ok();
+
+    blockchain_wrapper.add_mandos_set_account(cf_wrapper.address_ref());
+
+    CrowdfundingSetup {
+        blockchain_wrapper,
+        owner_address,
+        first_user_address,
+        second_user_address,
+        cf_wrapper,
+    }
+}
+
+Copy
+Copied!
+The main object you're going to be interacting with is the BlockchainStateWrapper. It holds the entire (mocked) blockchain state at any given moment and allows you to interact with the accounts.
+
+As you can see in the above test, we use the said wrapper to create an owner account, two other user accounts, and the Crowdfunding smart contract account.
+
+Then, we set the Kda balances for the two users and deploy the smart contract by using the execute_tx function of the BlockchainStateWrapper object. The arguments are:
+
+Caller address
+Contract wrapper (which contains the contract address and the contract object builder)
+KLV payment amount
+A lambda function, which contains the actual execution
+Since this is an SC deploy, we call the init function. Since the contract works with managed objects, we can't use the built-in Rust BigUint, so we use the one provided by klever_sc instead. To create managed types, we use the managed_ functions. Alternatively, you can create those objects by:
+
+let target = BigUint::<DebugApi>::from(2_000u32);
+
+Copy
+Copied!
+Keep in mind you can't create managed types outside of the execute_tx functions.
+
+Some observations for the execute_tx function:
+
+The return type for the lambda function is a TxResult, which has methods for checking for success or error: assert_ok() is used to check if the tx worked. If you want to check error cases, you would use assert_user_error("message").
+After running the init function, we add a setState step in the generated scenario to simulate our deploy: blockchain_wrapper.add_mandos_set_account(cf_wrapper.address_ref());
+To test the scenario and generate the trace file, you have to create a test function:
+
+#[test]
+fn init_test() {
+    let cf_setup = setup_crowdfunding(crowdfunding_kda::contract_obj);
+    cf_setup
+        .blockchain_wrapper
+        .write_mandos_output("_generated_init.scen.json");
+}
+
+Copy
+Copied!
+And you're done for this step. You successfully tested your contract's init function and generated a scenario for it.
+
+Testing Transactions
+Let's test the fund function. For this, we're going to use the previous setup, but now we use the execute_kda_transfer method instead of execute_tx because we're sending Kda to the contract while calling fund:
+
+#[test]
+fn fund_test() {
+    let mut cf_setup = setup_crowdfunding(crowdfunding_kda::contract_obj);
+    let b_wrapper = &mut cf_setup.blockchain_wrapper;
+    let user_addr = &cf_setup.first_user_address;
+
+    b_wrapper
+        .execute_kda_transfer(
+            user_addr,
+            &cf_setup.cf_wrapper,
+            CF_TOKEN_ID,
+            0,
+            &rust_biguint!(1_000),
+            |sc| {
+                sc.fund();
+
+                let user_deposit = sc.deposit(&managed_address!(user_addr)).get();
+                let expected_deposit = managed_biguint!(1_000);
+                assert_eq!(user_deposit, expected_deposit);
+            },
+        )
+        .assert_ok();
+}
+
+Copy
+Copied!
+As you can see, we can directly call the storage mappers (like deposit) from within the contract and compare with a local value. No need to encode anything.
+
+If you also want to generate a scenario file for this transaction, this is where a bit of manual work comes in:
+
+    let mut sc_call = ScCallMandos::new(user_addr, cf_setup.cf_wrapper.address_ref(), "fund");
+    sc_call.add_kda_transfer(CF_TOKEN_ID, 0, &rust_biguint!(1_000));
+
+    let expect = TxExpectMandos::new(0);
+    b_wrapper.add_mandos_sc_call(sc_call, Some(expect));
+
+    cf_setup
+        .blockchain_wrapper
+        .write_mandos_output("_generated_fund.scen.json");
+
+Copy
+Copied!
+You have to add this at the end of your fund_test. The more complex the call, the more arguments you'll have to add and such. The SCCallMandos struct has the add_argument method so you don't have to do any encoding by yourself.
+
+Testing Queries
+Testing queries is similar to testing transactions, just with fewer arguments (since there is no caller and no payment, and any modifications are automatically reverted):
+
+#[test]
+fn status_test() {
+    let mut cf_setup = setup_crowdfunding(crowdfunding_kda::contract_obj);
+    let b_wrapper = &mut cf_setup.blockchain_wrapper;
+
+    b_wrapper
+        .execute_query(&cf_setup.cf_wrapper, |sc| {
+            let status = sc.status();
+            assert_eq!(status, Status::FundingPeriod);
+        })
+        .assert_ok();
+
+    let sc_query = ScQueryMandos::new(cf_setup.cf_wrapper.address_ref(), "status");
+    let mut expect = TxExpectMandos::new(0);
+    expect.add_out_value(&Status::FundingPeriod);
+
+    b_wrapper.add_mandos_sc_query(sc_query, Some(expect));
+
+    cf_setup
+        .blockchain_wrapper
+        .write_mandos_output("_generated_query_status.scen.json");
+}
+
+Copy
+Copied!
+Testing Smart Contract Errors
+In the previous transaction test, we've tested the happy flow. Now let's see how we can check for errors:
+
+#[test]
+fn test_sc_error() {
+    let mut cf_setup = setup_crowdfunding(crowdfunding_kda::contract_obj);
+    let b_wrapper = &mut cf_setup.blockchain_wrapper;
+    let user_addr = &cf_setup.first_user_address;
+
+    b_wrapper.set_klv_balance(user_addr, &rust_biguint!(1_000));
+
+    b_wrapper
+        .execute_tx(
+            user_addr,
+            &cf_setup.cf_wrapper,
+            &rust_biguint!(1_000),
+            |sc| {
+                sc.fund();
+            },
+        )
+        .assert_user_error("wrong token");
+
+    b_wrapper
+        .execute_tx(user_addr, &cf_setup.cf_wrapper, &rust_biguint!(0), |sc| {
+            let user_deposit = sc.deposit(&managed_address!(user_addr)).get();
+            let expected_deposit = managed_biguint!(0);
+            assert_eq!(user_deposit, expected_deposit);
+        })
+        .assert_ok();
+
+    let mut sc_call = ScCallMandos::new(user_addr, cf_setup.cf_wrapper.address_ref(), "fund");
+    sc_call.add_klv_value(&rust_biguint!(1_000));
+
+    let mut expect = TxExpectMandos::new(4);
+    expect.set_message("wrong token");
+
+    b_wrapper.add_mandos_sc_call(sc_call, Some(expect));
+
+    cf_setup
+        .blockchain_wrapper
+        .write_mandos_output("_generated_sc_err.scen.json");
+}
+
+Copy
+Copied!
+Notice how we've changed the payment intentionally to an invalid token to check the error case. Also, we've changed the expected deposit to "0" instead of the previous "1_000". And lastly, we added the .assert_user_error("wrong token") call on the result.
+
+Testing a Successful Funding Campaign
+For this scenario, we need both users to fund the full amount, and then the owner to claim the funds. For simplicity, we've left the scenario generation out of this one:
+
+#[test]
+fn test_failed_cf() {
+    let mut cf_setup = setup_crowdfunding(crowdfunding_kda::contract_obj);
+    let b_wrapper = &mut cf_setup.blockchain_wrapper;
+    let owner = &cf_setup.owner_address;
+    let first_user = &cf_setup.first_user_address;
+    let second_user = &cf_setup.second_user_address;
+
+    // first user fund
+    b_wrapper
+        .execute_kda_transfer(
+            first_user,
+            &cf_setup.cf_wrapper,
+            CF_TOKEN_ID,
+            0,
+            &rust_biguint!(300),
+            |sc| {
+                sc.fund();
+
+                let user_deposit = sc.deposit(&managed_address!(first_user)).get();
+                let expected_deposit = managed_biguint!(300);
+                assert_eq!(user_deposit, expected_deposit);
+            },
+        )
+        .assert_ok();
+
+    // second user fund
+    b_wrapper
+        .execute_kda_transfer(
+            second_user,
+            &cf_setup.cf_wrapper,
+            CF_TOKEN_ID,
+            0,
+            &rust_biguint!(600),
+            |sc| {
+                sc.fund();
+
+                let user_deposit = sc.deposit(&managed_address!(second_user)).get();
+                let expected_deposit = managed_biguint!(600);
+                assert_eq!(user_deposit, expected_deposit);
+            },
+        )
+        .assert_ok();
+
+    // set block timestamp after deadline
+    b_wrapper.set_block_timestamp(CF_DEADLINE + 1);
+
+    // check status
+    b_wrapper
+        .execute_query(&cf_setup.cf_wrapper, |sc| {
+            let status = sc.status();
+            assert_eq!(status, Status::Failed);
+        })
+        .assert_ok();
+
+    // first user claim
+    b_wrapper
+        .execute_tx(first_user, &cf_setup.cf_wrapper, &rust_biguint!(0), |sc| {
+            sc.claim();
+        })
+        .assert_ok();
+
+    // second user claim
+    b_wrapper
+        .execute_tx(second_user, &cf_setup.cf_wrapper, &rust_biguint!(0), |sc| {
+            sc.claim();
+        })
+        .assert_ok();
+
+    b_wrapper.check_kda_balance(owner, CF_TOKEN_ID, &rust_biguint!(0));
+    b_wrapper.check_kda_balance(first_user, CF_TOKEN_ID, &rust_biguint!(1_000));
+    b_wrapper.check_kda_balance(second_user, CF_TOKEN_ID, &rust_biguint!(1_000));
+}
+
+Copy
+Copied!
+Conclusion
+These tests cover pretty much every flow in the crowdfunding smart contract. Keep in mind that code can be deduplicated even more by having functions similar to the setup_crowdfunding function, but for the sake of the example, we've kept this as simple as possible. We hope this will make writing tests and debugging a lot easier moving forward!
+
+Rust Testing Framework Functions Documentation
+This documentation provides an overview of the available functions in the Rust Testing Framework, focusing on the functionalities offered by the BlockchainStateWrapper type.
+
+Introduction
+This page lists the currently available functions in the Rust Testing Framework, specifically those provided by the BlockchainStateWrapper type.
+
+Please note that most functions in this framework use the num_bigint::BigUint type for numbers. It is essential to differentiate this type from the BigUint type used inside smart contracts, as they are distinct types. It is recommended to use the Rust version outside of lambda functions and only use the managed type when interacting directly with the smart contract.
+
+State-checking Functions
+These functions are designed to check the blockchain state and will cause the test to fail if the check is unsuccessful.
+
+check_klv_balance
+check_klv_balance(&self, address: &Address, expected_balance: &num_bigint::BigUint)
+
+Copy
+Copied!
+This function checks the KLV balance for the given address.
+
+check_kda_balance
+check_kda_balance(&self, address: &Address, token_id: &[u8], expected_balance: &num_bigint::BigUint)
+
+Copy
+Copied!
+Checks the fungible Kda balance for the specified address.
+
+check_nft_balance
+check_nft_balance<T>(&self, address: &Address, token_id: &[u8], nonce: u64, expected_balance: &num_bigint::BigUint, opt_expected_attributes: Option<&T>)
+
+Copy
+Copied!
+This function checks the NFT balance for a specific nonce associated with an address and optionally verifies the NFT attributes. If you are only interested in the balance, pass Option::None for opt_expected_attributes. If the Rust compiler struggles to deduce the generic T, you can use one of the following approaches:
+
+b_mock.check_nft_balance::<Empty>(..., None);
+
+b_mock.check_nft_balance(..., Option::<Empty>::None);
+
+Copy
+Copied!
+State-getter Functions
+These functions retrieve the current state and are generally used after a transaction to verify that tokens have reached their intended destination. Most functions will trigger a panic if an invalid address is provided as an argument.
+
+get_klv_balance
+get_klv_balance(&self, address: &Address) -> num_bigint::BigUint
+
+Copy
+Copied!
+Gets the KLV balance for the specified account.
+
+get_kda_balance
+get_kda_balance(&self, address: &Address, token_id: &[u8], token_nonce: u64) -> num_bigint::BigUint
+
+Copy
+Copied!
+Retrieves the Kda balance for the specified account. If you are interested in the balance of a fungible token, set token_nonce to 0.
+
+get_nft_attributes
+get_nft_attributes<T: TopDecode>(&self, address: &Address, token_id: &[u8], token_nonce: u64) -> Option<T>
+
+Copy
+Copied!
+Fetches the NFT attributes for a token owned by the specified address. It will return Option::None if no attributes are found.
+
+dump_state
+dump_state(&self)
+
+Copy
+Copied!
+Prints the current state to the console, which is useful for debugging.
+
+dump_state_for_account_hex_attributes
+dump_state_for_account_hex_attributes(&self, address: &Address)
+
+Copy
+Copied!
+Similar to the previous function but specifically dumps the state for the given account.
+
+dump_state_for_account
+dump_state_for_account<AttributesType: TopDecode + core::fmt::Debug>(&self, address: &Address)
+
+Copy
+Copied!
+Like the function above, it dumps the state for the specified account but also prints the attributes in a user-friendly format. This is particularly useful for debugging NFT attributes.
+
+State-altering Functions
+These functions modify the state in various ways.
+
+create_user_account
+create_user_account(&mut self, klv_balance: &num_bigint::BigUint) -> Address
+
+Copy
+Copied!
+Creates a new user account with the provided KLV balance. The framework generates a pseudo-random address for this account.
+
+create_user_account_fixed_address
+create_user_account_fixed_address(&mut self, address: &Address, klv_balance: &num_bigint::BigUint)
+
+Copy
+Copied!
+Similar to the previous function but allows you to create an account with a fixed address when necessary.
+
+create_sc_account
+create_sc_account<CB, ContractObjBuilder>(&mut self, klv_balance: &num_bigint::BigUint, owner: Option<&Address>, obj_builder: ContractObjBuilder, contract_wasm_path: &str) -> ContractObjWrapper<CB, ContractObjBuilder>
+
+Copy
+Copied!
+Creates a smart contract account. The obj_builder parameter requires sc_namespace::contract_obj. This function returns a ContractObjWrapper, which contains the address of the newly created smart contract and the function used to create instances of your contract. If you only need the address for setting the balance, you can use the address_ref method to obtain a reference to the stored address. The contract_wasm_path is relative to the tests folder where the current test file is located.
+
+create_sc_account_fixed_address
+create_sc_account_fixed_address<CB, ContractObjBuilder>(&mut self, address: &Address, klv_balance: &num_bigint::BigUint, owner: Option<&Address>, obj_builder: ContractObjBuilder, contract_wasm_path: &str) -> ContractObjWrapper<CB, ContractObjBuilder>
+
+Copy
+Copied!
+Similar to the previous function, but it allows the caller to specify the address instead of generating a random one.
+
+set_klv_balance
+set_klv_balance(&mut self, address: &Address, balance: &num_bigint::BigUint)
+
+Copy
+Copied!
+Sets the KLV balance for the specified account.
+
+set_kda_balance
+set_kda_balance(&mut self, address: &Address, token_id: &[u8], balance: &num_bigint::BigUint)
+
+Copy
+Copied!
+Sets the fungible token balance for the specified account.
+
+set_nft_balance
+set_nft_balance<T: TopEncode>(&mut self, address: &Address, token_id: &[u8], nonce: u64, balance: &num_bigint::BigUint, attributes: &T)
+
+Copy
+Copied!
+Sets the non-fungible token balance for the specified account along with the associated attributes. Attributes can be of any serializable type. If you do not require attributes, you can pass "empty" using various approaches, such as &(), &Vec::<u8>::new(), BoxedBytes::empty(), etc.
+
+set_kda_local_roles
+set_kda_local_roles(&mut self, address: &Address, token_id: &[u8], roles: &[KdaLocalRole])
+
+Copy
+Copied!
+Sets the Kda token roles for the specified address and token, typically used during setup steps.
+
+set_block_epoch
+set_block_epoch(&mut self, block_epoch: u64)
+
+Copy
+Copied!
+set_block_nonce
+set_block_nonce(&mut self, block_nonce: u64)
+
+Copy
+Copied!
+set_block_round
+set_block_round(&mut self, block_round: u64)
+
+Copy
+Copied!
+set_block_timestamp
+set_block_timestamp(&mut self, block_timestamp: u64)
+
+Copy
+Copied!
+set_block_random_seed
+set_block_random_seed(&mut self, block_random_seed: Box<[u8; 48]>)
+
+Copy
+Copied!
+These functions allow you to set various values for the current block information.
+
+set_prev_block_epoch
+set_prev_block_epoch(&mut self, block_epoch: u64)
+
+Copy
+Copied!
+set_prev_block_nonce
+set_prev_block_nonce(&mut self, block_nonce: u64)
+
+Copy
+Copied!
+set_prev_block_round
+set_prev_block_round(&mut self, block_round: u64)
+
+Copy
+Copied!
+set_prev_block_timestamp
+set_prev_block_timestamp(&mut self, block_timestamp: u64)
+
+Copy
+Copied!
+set_prev_block_random_seed
+set_prev_block_random_seed(&mut self, block_random_seed: Box<[u8; 48]>)
+
+Copy
+Copied!
+These functions are similar to the previous set but apply to the previous block.
+
+Smart Contract Execution Functions
+These functions facilitate interactions with smart contracts. While they can be categorized as state-altering functions, they have been placed in a separate section for clarity.
+
+execute_tx
+execute_tx(&mut self, caller: &Address, sc_wrapper: &ContractObjWrapper<...>, klv_payment: &num_bigint::BigUint, tx_fn: TxFn) -> TxResult
+
+Copy
+Copied!
+Executes a transaction towards the specified smart contract, optionally including a KLV payment (use 0 for no payment). tx_fn is a lambda function that accepts a contract object as an argument. For more details on how to write such a lambda, refer to the Crowdfunding test examples.
+
+execute_kda_transfer
+execute_kda_transfer(&mut self, caller: &Address, sc_wrapper: &ContractObjWrapper<...>, token_id: &[u8], kda_nonce: u64, kda_amount: &num_bigint::BigUint, tx_fn: TxFn) -> TxResult
+
+Copy
+Copied!
+Similar to the previous function but executes an Kda/NFT transfer instead of a KLV transfer.
+
+execute_kda_multi_transfer
+execute_kda_multi_transfer(&mut self, caller: &Address, sc_wrapper: &ContractObjWrapper<...>, kda_transfers: &[TxInputKDA], tx_fn: TxFn) -> TxResult
+
+Copy
+Copied!
+Similar to the function above but performs a MultiKDANFT transfer.
+
+execute_query
+execute_query(&mut self, sc_wrapper: &ContractObjWrapper<...>, query_fn: TxFn) -> TxResult
+
+Copy
+Copied!
+Executes a SCQuery on the smart contract. None of the changes are committed to the state, but the function requires mutability to perform temporary changes. Just like on the real blockchain, there is no caller or token transfer for queries.
+
+execute_in_managed_environment
+execute_in_managed_environment(&self, f: Func) -> T
+
+Copy
+Copied!
+Executes an arbitrary function and returns its result, which can be of any type. This function is rarely used but can be helpful when performing checks involving managed types, which cannot be created outside of lambda functions.
+
+Undocumented Functions
+Several scenario generation functions have not been included in this documentation. We advise against using scenario generation, as it is time-consuming, and the results are often unreadable scenario files. If scenarios are necessary, we recommend writing them manually. If you still wish to explore scenario generation, you can find examples in the Crowdfunding test examples.
+
+Debugging Smart Contracts with Visual Studio Code
+Debugging smart contracts is made possible with the integrated debugger in Visual Studio Code. You can debug your contract just like you would debug a regular program.
+
+Prerequisites
+Before proceeding with this tutorial, make sure you have the following:
+
+Visual Studio Code
+The rust-analyser extension.
+The CodeLLDB extension.
+A Rust test
+If you want to follow along, you can clone the klever-sdk-rs repository and use the crowdfunding-kda example.
+
+Step-by-Step Debugging
+In VSCode, you can set breakpoints anywhere in your code by clicking to the left of the line number. A red dot will appear to mark the breakpoint as registered by the environment:
+
+Breakpoint Setup
+
+Once you've set a breakpoint, you can debug your test function by clicking the Debug button above the test function name:
+
+Start Test
+
+If it doesn't appear, you might need to wait for rust-analyser to load or ensure you've added the #[test] annotation.
+
+Once you've started the test, it should stop at the breakpoint and highlight the current line:
+
+First Step Debugging
+
+You can then use VSCode's step-by-step debugging (usually F10 to step over, F11 to step into, or Shift + F11 to step out).
+
+Inspecting Variables
+For basic Rust types like u64, you can simply hover over them to see their values.
+
+However, for managed types, you won't see the actual data; instead, you'll see something like this:
+
+handle:0
+_phantom:{...}
+
+Copy
+Copied!
+To inspect managed types, use the sc_print! macro:
+
+sc_print!("{}", target);
+
+Copy
+Copied!
+Adding this line to the beginning of the #[init] function will print 2000 in the console.
+
+Printing Formatted Messages
+If you want to print other data types, you can use the sc_print! macro as well. For example, in the #[init] function:
+
+sc_print!(
+    "I accept {}, a number of {}, and only until {}",
+    token_identifier,
+    target,
+    deadline
+);
+
+Copy
+Copied!
+This macro will print the following:
+
+"I accept CROWD-123456, a number of 2000, and only until 604800"
+
+Note: For ASCII or decimal representation, use {}, and for hexadecimal, use {:x}.
+
+Understanding Randomness in Blockchain Contracts
+Randomness in the blockchain environment poses a unique challenge due to the need for all nodes to have the same "random" generator to achieve consensus. This challenge is addressed by employing Golang's standard seeded random number generator directly within the VM. You can find the relevant library here.
+
+The VM function mBufferSetRandom utilizes this library and is seeded with a combination of the following:
+
+Previous block random seed
+Current block random seed
+Transaction hash
+We won't delve into the specifics of how the Golang library utilizes the seed or generates random numbers, as it goes beyond the scope of this tutorial.
+
+Generating Random Numbers in Smart Contracts
+The ManagedBuffer type offers two methods for generating random numbers:
+
+fn new_random(nr_bytes: usize) -> Self, which creates a new ManagedBuffer with nr_bytes random bytes.
+fn set_random(&mut self, nr_bytes: usize), which sets an existing buffer to contain random bytes.
+For convenience, a wrapper named RandomnessSource is provided. It includes methods for generating random numbers for all base Rust unsigned numerical types and a method for generating random bytes.
+
+For example, to generate n random u16 values:
+
+let mut rand_source = RandomnessSource::new();
+for _ in 0..n {
+    let my_rand_nr = rand_source.next_u16();
+    // Process the generated number
+}
+
+Copy
+Copied!
+Similar methods are available for other Rust unsigned numerical types.
+
+Generating Random Numbers within a Specific Range
+Suppose you need to implement a Fisher-Yates shuffling algorithm within your smart contract (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle). The RandomnessSource struct provides methods for generating numbers within a specified range, such as fn next_usize_in_range(min: usize, max: usize) -> usize, which generates a random usize within the [min, max) range. These methods are available for other numerical types as well.
+
+For example, if you want to shuffle a vector of ManagedBuffers:
+
+let mut my_vec = ManagedVec::new();
+// ...
+// Fill my_vec with elements
+// ...
+
+let vec_len = my_vec.len();
+let mut rand_source = RandomnessSource::new();
+for i in 0..vec_len {
+    let rand_index = rand_source.next_usize_in_range(i, vec_len);
+    let first_item = my_vec.get(i).unwrap();
+    let second_item = my_vec.get(rand_index).unwrap();
+
+    my_vec.set(i, &second_item);
+    my_vec.set(rand_index, &first_item);
+}
+
+Copy
+Copied!
+This algorithm shuffles each element at position i with an element within the range [i, vec_len).
+
+Generating Random Bytes
+Suppose you want to create NFTs in your contract and assign each of them a random 32-byte hash. To achieve this, you can use the next_bytes(len: usize) method of the RandomnessSource struct:
+
+let mut rand_source = RandomnessSource::new();
+let rand_hash = rand_source.next_bytes(32);
+// Implement NFT creation logic here
+
+Copy
+Copied!
+Considerations
+🚨 Avoid basing your smart contract logic solely on the current state.
+For example, this is an undesirable implementation:
+
+#[payable("KLV")]
+#[endpoint(rollDie)]
+fn roll_die(&self) {
+    // ...
+    let payment = self.call_value().klv_value();
+    let rand_nr = rand_source.next_u8();
+    if rand_nr % 6 == 0 {
+        let prize = payment * 2u32;
+        self.send().direct(&caller, &prize);
+    }
+    // ...
+}
+
+Copy
+Copied!
+Such logic can be easily abused by simulating transactions and only sending them when winning is guaranteed, resulting in a 100% win chance. Remember that you are operating on a public blockchain, not a private server.
+
+A more robust implementation might look like this:
+
+#[payable("KLV")]
+#[endpoint(signUp)]
+fn sign_up(&self) {
+    let already_signed_up = self.user_list().insert(caller.clone());
+    if already_signed_up {
+        sc_panic!("Already signed up");
+    }
+}
+
+#[only_owner]
+#[endpoint(selectWinners)]
+fn select_winners(&self) {
+    for user in self.user_list().iter() {
+        let rand_nr = rand_source.next_u8();
+        if rand_nr % 6 == 0 {
+            self.winners_list().insert(user.clone());
+        }
+    }
+}
+
+#[endpoint]
+fn claim(&self) {
+    let was_winner = self.winners_list().swap_remove(&caller);
+    if was_winner {
+        self.send().direct_klv(&caller, &prize);
+    }
+}
+
+#[storage_mapper("userList")]
+fn user_list(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+#[storage_mapper("winnersList")]
+fn winners_list(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+Copy
+Copied!
+Conclusion
+The provided random number generator should suffice for most use cases. Enjoy using it for lotteries and other applications!

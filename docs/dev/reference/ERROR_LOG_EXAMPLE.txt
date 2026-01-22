@@ -1,0 +1,36 @@
+============================================================
+DIGIKO ERROR LOG
+============================================================
+
+ERROR DETAILS:
+Title: Staking Failed
+Message: Unable to stake tokens. Insufficient DGKO balance in wallet.
+Stack Trace:
+Error: Insufficient balance
+    at handleStake (StakingPage.tsx:145:11)
+    at async onClick (StakingForm.tsx:89:5)
+
+CONTEXT:
+Timestamp: 2024-11-28T10:23:45.678Z
+Route: /staking
+User Address: klv1abc7...def456
+Component: StakingPage
+Action Attempted: Stake 1000 DGKO at 10% APR
+
+ENVIRONMENT:
+App Version: v1.0.0
+Network: mainnet
+Browser: Chrome 119.0
+OS: macOS
+Device: desktop
+User Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36
+
+TRANSACTION DETAILS:
+Type: stake
+Token: DGKO
+Amount: 1000
+Raw Error: contract: insufficient balance for operation
+
+============================================================
+END OF ERROR LOG
+============================================================
