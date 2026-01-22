@@ -37,9 +37,9 @@ const interMono = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Rare Canvas - Web3 on Klever',
-  description: 'Rare Canvas - Web3 application on Klever Blockchain',
-  keywords: 'Rare Canvas, Klever, Blockchain, Web3, DApp, Cryptocurrency, NFT',
+  title: 'Rare Canvas - NFT Marketplace on Klever Chain',
+  description: 'Discover, trade, and collect NFTs on Klever Chain. The premier NFT marketplace built on Klever blockchain with fast transactions and low fees.',
+  keywords: 'NFT, NFT Marketplace, Klever, Klever Chain, Digital Art, Collectibles, Crypto Art, NFT Trading, Web3, Blockchain',
   authors: [{ name: 'Rare Canvas' }],
   creator: 'Rare Canvas',
   publisher: 'Rare Canvas',
@@ -64,21 +64,21 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://rarecanvas.io',
     siteName: 'Rare Canvas',
-    title: 'Rare Canvas - Web3 on Klever Blockchain',
-    description: 'Explore and manage your digital assets on Klever Blockchain.',
+    title: 'Rare Canvas - NFT Marketplace on Klever Chain',
+    description: 'Discover, trade, and collect NFTs on Klever Chain. Browse collections, buy and sell digital art, and manage your NFT portfolio.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Rare Canvas - Web3 on Klever Blockchain',
+        alt: 'Rare Canvas - NFT Marketplace on Klever Chain',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Rare Canvas - Web3 on Klever Blockchain',
-    description: 'Explore and manage your digital assets on Klever Blockchain.',
+    title: 'Rare Canvas - NFT Marketplace on Klever Chain',
+    description: 'Discover, trade, and collect NFTs on Klever Chain. Browse collections, buy and sell digital art.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -179,7 +179,7 @@ export default function RootLayout({
                         </span>
                       </div>
                       <p className="text-sm text-text-muted mb-2">
-                        DeFi on Klever Blockchain
+                        NFT Marketplace on Klever Chain
                       </p>
                       <p className="text-xs text-text-muted font-mono">
                         {APP_CONFIG.versionDisplay}
