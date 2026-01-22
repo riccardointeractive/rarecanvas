@@ -140,22 +140,45 @@ export async function GET(request: NextRequest) {
             { status: 400 }
           );
         }
-        
+
         const params = new URLSearchParams();
         const collection = searchParams.get('collection');
         const page = searchParams.get('page');
         const limit = searchParams.get('limit');
         const sort = searchParams.get('sort');
-        
+
         if (collection) params.set('collection', collection);
         if (page) params.set('page', page);
         if (limit) params.set('limit', limit);
         if (sort) params.set('sort', sort);
-        
+
         apiUrl = `${baseUrl}/v1.0/marketplaces/${id}?${params}`;
         break;
       }
-      
+
+      case 'transactions': {
+        // Get marketplace transactions (Buy=17, Sell=18, Cancel=19)
+        const params = new URLSearchParams();
+        const type = searchParams.get('type'); // 17, 18, or 19
+        const page = searchParams.get('page') || '1';
+        const limit = searchParams.get('limit') || '20';
+        const status = searchParams.get('status') || 'success';
+        const fromAddress = searchParams.get('fromAddress');
+        const toAddress = searchParams.get('toAddress');
+        const orderId = searchParams.get('orderId');
+
+        params.set('page', page);
+        params.set('limit', limit);
+        params.set('status', status);
+        if (type) params.set('type', type);
+        if (fromAddress) params.set('fromAddress', fromAddress);
+        if (toAddress) params.set('toAddress', toAddress);
+        if (orderId) params.set('orderid', orderId);
+
+        apiUrl = `${baseUrl}/v1.0/transaction/list?${params}`;
+        break;
+      }
+
       default:
         return NextResponse.json(
           { error: `Unknown action: ${action}` },
