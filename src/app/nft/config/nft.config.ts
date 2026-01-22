@@ -92,9 +92,9 @@ export const ACTIVITY_COLORS = {
 
 export const FEATURED_COLLECTIONS = [
   {
-    assetId: 'DGKONFT-EXAMPLE',
-    name: 'Digiko Genesis',
-    description: 'The founding collection of Digiko NFTs',
+    assetId: 'RCNFT-EXAMPLE',
+    name: 'Rare Canvas Genesis',
+    description: 'The founding collection of Rare Canvas NFTs',
     featured: true,
   },
 ];

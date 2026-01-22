@@ -1,4 +1,4 @@
-# Digiko Design Philosophy
+# Rare Canvas Design Philosophy
 
 **Version:** 3.1  
 **Last Updated:** January 16, 2026  
@@ -11,7 +11,7 @@
 
 ## 🚨 CORE PRINCIPLE: SCALABILITY FIRST
 
-**The #1 rule of Digiko design: Everything must be changeable in ONE place.**
+**The #1 rule of Rare Canvas design: Everything must be changeable in ONE place.**
 
 If changing the brand color requires editing 50 files, the design system has failed. Every color, spacing, shadow, and effect must flow from a single source of truth.
 
@@ -93,7 +93,7 @@ className="shadow-glow-primary"
 
 ```tsx
 // ❌ FORBIDDEN - Old naming
-className="text-digiko-primary"
+className="text-brand-primary"
 className="bg-klever-blue"
 className="glow-primary-lg"
 className="glass-hover"
@@ -251,13 +251,13 @@ When migrating a page to Vercel style:
 7. ☐ Replace Lucide icons with consistent size (`w-6 h-6`, `strokeWidth={1.5}`)
 8. ☐ Verify all hover states use `hover:bg-bg-elevated`
 9. ☐ Standardize spacing: `gap-6 md:gap-8` for grids
-10. ☐ Run audit: `grep -n "digiko-\|emerald-\|green-[0-9]" <file>`
+10. ☐ Run audit: `grep -n "emerald-\|green-[0-9]" <file>`
 
 ---
 
 ## 🎯 DESIGN TERRITORIES
 
-Digiko uses **different visual languages for different contexts**. Understanding when to use each aesthetic is critical for creating appropriate user experiences.
+Rare Canvas uses **different visual languages for different contexts**. Understanding when to use each aesthetic is critical for creating appropriate user experiences.
 
 ### Core Platform (Vercel Style) ✅ UPDATED v3.1
 
@@ -290,7 +290,7 @@ Digiko uses **different visual languages for different contexts**. Understanding
 
 **Reference Implementation:** `src/app/page.tsx` (Homepage - fully compliant)
 
-**Psychology:** Users entrust their assets to Digiko. A clean, professional interface signals security and competence. Flat design = trustworthy. Flashy effects = suspicious.
+**Psychology:** Users entrust their assets to Rare Canvas. A clean, professional interface signals security and competence. Flat design = trustworthy. Flashy effects = suspicious.
 
 ---
 
@@ -357,7 +357,7 @@ Digiko uses **different visual languages for different contexts**. Understanding
 Some elements remain consistent everywhere:
 
 **Always Consistent:**
-- Logo and branding (Digiko blue = `--color-brand-primary`)
+- Logo and branding (Rare Canvas purple = `--color-brand-primary`)
 - Navigation structure (layout, hierarchy)
 - Semantic color tokens (NEVER hardcode)
 - Mobile-first responsive approach
@@ -379,7 +379,7 @@ Some elements remain consistent everywhere:
 When users move from one territory to another, transitions should be:
 
 - **Clear:** Users know they entered a different experience
-- **Branded:** Still feels like Digiko
+- **Branded:** Still feels like Rare Canvas
 - **Intentional:** Not accidental or chaotic
 
 **Example Pattern:**
@@ -407,7 +407,7 @@ Clean blue    Introduces gold      Full celebration
 **For Brand:**
 - Professional for finance (builds trust)
 - Exciting for entertainment (drives engagement)
-- Cohesive overall (recognizable as Digiko)
+- Cohesive overall (recognizable as Rare Canvas)
 
 ---
 
@@ -415,7 +415,7 @@ Clean blue    Introduces gold      Full celebration
 
 ### 1. Mobile-First Always
 
-**Why:** 60% of users access Digiko on mobile devices
+**Why:** 60% of users access Rare Canvas on mobile devices
 
 **Philosophy:**
 - Design and build for mobile first
@@ -434,7 +434,7 @@ Clean blue    Introduces gold      Full celebration
 
 ### 2. Flat Design for Trust (NEW v3.0)
 
-**Why:** Glass morphism and gradients look "crypto" - Digiko aims for fintech credibility
+**Why:** Glass morphism and gradients look "crypto" - Rare Canvas aims for fintech credibility
 
 **Philosophy:**
 - Flat backgrounds signal professionalism
@@ -460,7 +460,7 @@ className="bg-gradient-to-br from-..."
 
 ### 3. Apple-Inspired Minimalism
 
-**Why:** Digiko is a fintech platform, not a circus
+**Why:** Rare Canvas is a fintech platform, not a circus
 
 **Philosophy:**
 - Subtract until nothing remains to remove
@@ -738,27 +738,27 @@ className="p-8"    // Wastes space on mobile
 
 **"If it's blue, it better do something when I click it."**
 
-Primary blue (`digiko-primary`, `#0066FF`) is **sacred** - reserved exclusively for interactive elements.
+Brand purple (`brand-primary`, `#8B5CF6`) is **sacred** - reserved exclusively for interactive elements.
 
 | Element | Correct | Wrong |
 |---------|---------|-------|
-| CTA Button | `bg-digiko-primary` | ✅ |
-| Text Link | `text-digiko-primary` | ✅ |
-| Info Text | `text-digiko-primary` | ❌ Use `text-white` |
-| Icon Background | `bg-digiko-primary/20` | ❌ Use `bg-white/10` |
-| Active Nav Item | `text-digiko-primary` | ❌ Use `text-white bg-white/10` |
-| Non-clickable Badge | `bg-digiko-primary` | ❌ Use `bg-white/10` |
+| CTA Button | `bg-brand-primary` | ✅ |
+| Text Link | `text-brand-primary` | ✅ |
+| Info Text | `text-brand-primary` | ❌ Use `text-white` |
+| Icon Background | `bg-brand-primary/20` | ❌ Use `bg-white/10` |
+| Active Nav Item | `text-brand-primary` | ❌ Use `text-white bg-white/10` |
+| Non-clickable Badge | `bg-brand-primary` | ❌ Use `bg-white/10` |
 
 **Hover States:**
 ```tsx
-// ✅ Blue element → darker blue hover
-className="bg-digiko-primary hover:bg-digiko-secondary"
+// ✅ Brand element → darker brand hover
+className="bg-brand-primary hover:bg-brand-primary-hover"
 
-// ✅ Non-blue element → white/opacity hover
+// ✅ Non-brand element → white/opacity hover
 className="text-gray-400 hover:text-white hover:bg-white/10"
 
-// ❌ NEVER: non-blue turning blue on hover
-className="text-gray-400 hover:text-digiko-primary"
+// ❌ NEVER: non-brand turning brand on hover
+className="text-gray-400 hover:text-brand-primary"
 ```
 
 ### Animations

@@ -1,7 +1,7 @@
-# DIGIKO PROJECT RULES
+# RARE CANVAS PROJECT RULES
 
-**Version:** 6.0  
-**Rules:** 9
+**Version:** 6.1
+**Rules:** 8
 
 ---
 
@@ -20,17 +20,17 @@ If something is repeated, it should not be hardcoded.
 **Two-Price System:**
 | Price | Source | Use |
 |-------|--------|-----|
-| VIEW PRICE | DEXscan API (aggregated from Digiko, Swopus, SAME) | Display, portfolio, charts, AI comparison |
+| VIEW PRICE | DEXscan API (aggregated from Rare Canvas, Swopus, SAME) | Display, portfolio, charts, AI comparison |
 | RESERVE PRICE | Pool reserves (`reserveA / reserveB`) | Actual swap execution |
 
 ```typescript
 // VIEW PRICE - what market says
 import { useViewPrices } from '@/hooks';
 const { data: prices } = useViewPrices();
-const dgkoMarketPrice = prices?.DGKO?.priceUsd;
+const tokenMarketPrice = prices?.KLV?.priceUsd;
 
 // RESERVE PRICE - what you'll actually get
-const reservePrice = reserveKLV / reserveDGKO;
+const reservePrice = reserveKLV / reserveToken;
 ```
 
 **If you're typing the same value twice, you're doing it wrong.**
@@ -148,22 +148,11 @@ const { invalidatePositions, invalidateActivity } = useInvalidateMyDex();
 
 ---
 
-## 9. ZIP UPDATES
-
-Make sure unzip path matches project folder.
-
-```bash
-unzip -o ~/Downloads/update.zip
-rm -rf .next && npm run dev
-```
-
----
-
 ## QUICK REFERENCE
 
 ```
-Project folder: ~/Projects/digiko/
-Mainnet: digiko.io
+Project folder: ~/Projects/rarecanvas/
+Mainnet: rarecanvas.io
 Proxy API: api.mainnet.klever.org
 SC Query: api.mainnet.klever.org/v1.0/sc/query
 ```
